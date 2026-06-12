@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+.env
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Logs (keep the directories, ignore the contents)
+logs/raw/*
+logs/evidence_graph_snapshots/*
+logs/execution_log.json
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Keep tracked .gitkeep files
+!logs/.gitkeep
+!logs/raw/.gitkeep
+!logs/evidence_graph_snapshots/.gitkeep
