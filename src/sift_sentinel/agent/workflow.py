@@ -301,8 +301,21 @@ class AnalysisWorkflow:
             "raw_output_paths": raw_output_paths,
         }
 
+    def sync_metadata(self) -> None:
+        """Sync runtime counters into the evidence graph metadata.
+
+        Call this before generating reports or saving state to ensure
+        metadata reflects actual execution counts.
+        """
+        self.graph.graph.metadata.total_tool_executions = self.tracker._counter
+        if not self.graph.graph.metadata.analysis_end:
+            self.graph.graph.metadata.analysis_end = datetime.datetime.now(
+                datetime.timezone.utc
+            ).isoformat()
+
     def save_state(self) -> dict:
         """Save all current state to disk. Returns paths of saved files."""
+        self.sync_metadata()
         graph_path = os.path.join(self.output_dir, "evidence_graph.json")
         log_path = os.path.join(self.output_dir, "execution_log.json")
 
