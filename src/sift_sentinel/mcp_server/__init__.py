@@ -1,5 +1,11 @@
 from .response_envelope import ToolResponse, create_response, ExecutionTracker
 from .evidence_mount import EvidenceMount
+from .injection_defense import (
+    scan_for_injection,
+    get_defense_summary,
+    InjectionScanResult,
+    KNOWN_INJECTION_PATTERNS,
+)
 from .tools import (
     extract_mft_timeline,
     parse_prefetch,
@@ -32,4 +38,8 @@ __all__ = [
     "analyze_memory_malfind",
     "parse_lnk_files",
     "analyze_usn_journal",
+    "scan_for_injection",
+    "get_defense_summary",
+    "InjectionScanResult",
+    "KNOWN_INJECTION_PATTERNS",
 ]
