@@ -652,3 +652,411 @@ def extract_strings(
         raw_output_dir, parsed, tracker, evidence_hashes,
         error_message=err, duration_seconds=time.perf_counter() - start,
     )
+
+
+# --- Volatility 3 helpers (shared by the memory analysis tools) ---
+
+
+def _run_volatility(memory_image_path: str, plugin: str) -> tuple[int, str, str]:
+    """Run a Volatility 3 plugin, trying the global ``vol`` then ``python3 -m volatility3``."""
+    rc, out, err = _run_command(
+        ["vol", "-f", memory_image_path, plugin, "--output", "json"]
+    )
+    if rc == 127:
+        rc, out, err = _run_command(
+            ["python3", "-m", "volatility3", "-f", memory_image_path, plugin,
+             "--output", "json"]
+        )
+    return rc, out, err
+
+
+def _parse_vol_json(stdout: str):
+    """Parse Volatility JSON output into a list of row dicts, or None if not JSON."""
+    s = stdout.strip()
+    if not s:
+        return None
+    try:
+        data = json.loads(s)
+    except (ValueError, TypeError):
+        return None
+    if isinstance(data, list):
+        return [r for r in data if isinstance(r, dict)]
+    if isinstance(data, dict):
+        # Some renderers wrap the rows under a key; take the first list value.
+        for value in data.values():
+            if isinstance(value, list):
+                return [r for r in value if isinstance(r, dict)]
+        return [data]
+    return None
+
+
+def _parse_vol_table(text: str, header_hints) -> list[dict]:
+    """Best-effort parse of Volatility's tabular text output into row dicts.
+
+    Locates the header row by matching at least two of ``header_hints``, then
+    splits columns on tabs (preferred) or runs of two-or-more spaces.
+    """
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    if not lines:
+        return []
+    hints = [h.lower() for h in header_hints]
+
+    header_idx = None
+    for i, ln in enumerate(lines):
+        low = ln.lower()
+        if sum(1 for h in hints if h in low) >= 2:
+            header_idx = i
+            break
+    if header_idx is None:
+        return []
+
+    def split_cols(line: str) -> list[str]:
+        if "\t" in line:
+            return [c.strip() for c in line.split("\t")]
+        return [c.strip() for c in re.split(r"\s{2,}", line.strip())]
+
+    headers = split_cols(lines[header_idx])
+    rows: list[dict] = []
+    for ln in lines[header_idx + 1:]:
+        cols = split_cols(ln)
+        if len(cols) < 2:
+            continue
+        rows.append(
+            {h: (cols[j] if j < len(cols) else "") for j, h in enumerate(headers)}
+        )
+    return rows
+
+
+# --- Memory: process list (Volatility 3 windows.pslist / pstree) ---
+
+
+def analyze_memory_processes(
+    memory_image_path: str,
+    tracker: ExecutionTracker,
+    raw_output_dir: str,
+    evidence_hashes: dict | None = None,
+) -> ToolResponse:
+    """List running processes from a memory capture using Volatility 3."""
+    execution_id = tracker.next_id()
+    start = time.perf_counter()
+    input_params = {"memory_image_path": memory_image_path}
+
+    if not os.path.isfile(memory_image_path):
+        return _finalize(
+            "analyze_memory_processes", execution_id, input_params, "error", "",
+            raw_output_dir, [], tracker, evidence_hashes,
+            error_message=f"Memory image not found or not a regular file: "
+            f"{memory_image_path}.",
+            duration_seconds=time.perf_counter() - start,
+        )
+
+    rc, stdout, stderr = _run_volatility(memory_image_path, "windows.pslist")
+    raw_output = stdout or stderr
+
+    rows = _parse_vol_json(stdout)
+    if rows is None:
+        rows = _parse_vol_table(stdout, ["PID", "PPID", "ImageFileName"])
+
+    parsed = []
+    for row in rows:
+        parsed.append(
+            {
+                "pid": _to_int(_row_get(row, ["PID", "Pid"])),
+                "ppid": _to_int(_row_get(row, ["PPID", "Ppid"])),
+                "image_name": _row_get(row, ["ImageFileName", "Image", "Name"]),
+                "offset": _row_get(row, ["Offset(V)", "Offset", "Offset(P)"]),
+                "threads": _to_int(_row_get(row, ["Threads"])),
+                "handles": _to_int(_row_get(row, ["Handles"])),
+                "session_id": _to_int(_row_get(row, ["SessionId", "Session"])),
+                "create_time": _row_get(row, ["CreateTime", "Created"]),
+                "exit_time": _row_get(row, ["ExitTime", "Exited"]),
+            }
+        )
+
+    status, err = _classify(rc, stderr, parsed, "volatility3")
+    return _finalize(
+        "analyze_memory_processes", execution_id, input_params, status, raw_output,
+        raw_output_dir, parsed, tracker, evidence_hashes,
+        error_message=err, duration_seconds=time.perf_counter() - start,
+    )
+
+
+# --- Memory: network connections (Volatility 3 windows.netscan) ---
+
+
+def analyze_memory_network(
+    memory_image_path: str,
+    tracker: ExecutionTracker,
+    raw_output_dir: str,
+    evidence_hashes: dict | None = None,
+) -> ToolResponse:
+    """Extract network connections from a memory capture using Volatility 3."""
+    execution_id = tracker.next_id()
+    start = time.perf_counter()
+    input_params = {"memory_image_path": memory_image_path}
+
+    if not os.path.isfile(memory_image_path):
+        return _finalize(
+            "analyze_memory_network", execution_id, input_params, "error", "",
+            raw_output_dir, [], tracker, evidence_hashes,
+            error_message=f"Memory image not found or not a regular file: "
+            f"{memory_image_path}.",
+            duration_seconds=time.perf_counter() - start,
+        )
+
+    rc, stdout, stderr = _run_volatility(memory_image_path, "windows.netscan")
+    raw_output = stdout or stderr
+
+    rows = _parse_vol_json(stdout)
+    if rows is None:
+        rows = _parse_vol_table(stdout, ["Proto", "LocalAddr", "PID"])
+
+    parsed = []
+    for row in rows:
+        parsed.append(
+            {
+                "protocol": _row_get(row, ["Proto", "Protocol"]),
+                "local_address": _row_get(row, ["LocalAddr", "LocalAddress", "Local Address"]),
+                "local_port": _to_int(_row_get(row, ["LocalPort", "Local Port"])),
+                "remote_address": _row_get(
+                    row, ["ForeignAddr", "RemoteAddress", "Foreign Address"]
+                ),
+                "remote_port": _to_int(
+                    _row_get(row, ["ForeignPort", "RemotePort", "Foreign Port"])
+                ),
+                "state": _row_get(row, ["State"]),
+                "pid": _to_int(_row_get(row, ["PID", "Pid"])),
+                "owner": _row_get(row, ["Owner"]),
+                "created": _row_get(row, ["Created", "CreateTime"]),
+            }
+        )
+
+    status, err = _classify(rc, stderr, parsed, "volatility3")
+    return _finalize(
+        "analyze_memory_network", execution_id, input_params, status, raw_output,
+        raw_output_dir, parsed, tracker, evidence_hashes,
+        error_message=err, duration_seconds=time.perf_counter() - start,
+    )
+
+
+# --- Memory: injected-code detection (Volatility 3 windows.malfind) ---
+
+
+def analyze_memory_malfind(
+    memory_image_path: str,
+    tracker: ExecutionTracker,
+    raw_output_dir: str,
+    evidence_hashes: dict | None = None,
+) -> ToolResponse:
+    """Detect potentially injected code in process memory using Volatility 3."""
+    execution_id = tracker.next_id()
+    start = time.perf_counter()
+    input_params = {"memory_image_path": memory_image_path}
+
+    if not os.path.isfile(memory_image_path):
+        return _finalize(
+            "analyze_memory_malfind", execution_id, input_params, "error", "",
+            raw_output_dir, [], tracker, evidence_hashes,
+            error_message=f"Memory image not found or not a regular file: "
+            f"{memory_image_path}.",
+            duration_seconds=time.perf_counter() - start,
+        )
+
+    rc, stdout, stderr = _run_volatility(memory_image_path, "windows.malfind")
+    raw_output = stdout or stderr
+
+    rows = _parse_vol_json(stdout)
+    if rows is None:
+        rows = _parse_vol_table(stdout, ["PID", "Process", "Protection"])
+
+    parsed = []
+    for row in rows:
+        parsed.append(
+            {
+                "pid": _to_int(_row_get(row, ["PID", "Pid"])),
+                "process_name": _row_get(row, ["Process", "ImageFileName", "Name"]),
+                "address": _row_get(
+                    row, ["Start VPN", "Address", "Start", "StartVPN"]
+                ),
+                "vad_tag": _row_get(row, ["Tag", "VadTag", "Vad Tag"]),
+                "protection": _row_get(row, ["Protection"]),
+                "hexdump": _row_get(row, ["Hexdump", "HexDump"]),
+                "disassembly": _row_get(row, ["Disasm", "Disassembly"]),
+            }
+        )
+
+    status, err = _classify(rc, stderr, parsed, "volatility3")
+    return _finalize(
+        "analyze_memory_malfind", execution_id, input_params, status, raw_output,
+        raw_output_dir, parsed, tracker, evidence_hashes,
+        error_message=err, duration_seconds=time.perf_counter() - start,
+    )
+
+
+# --- LNK shortcut files (LECmd) ---
+
+
+def parse_lnk_files(
+    image_mount_path: str,
+    tracker: ExecutionTracker,
+    raw_output_dir: str,
+    evidence_hashes: dict | None = None,
+) -> ToolResponse:
+    """Parse Windows LNK (shortcut) files using LECmd."""
+    execution_id = tracker.next_id()
+    start = time.perf_counter()
+    input_params = {"image_mount_path": image_mount_path}
+
+    if not os.path.isdir(image_mount_path):
+        return _finalize(
+            "parse_lnk_files", execution_id, input_params, "error", "",
+            raw_output_dir, [], tracker, evidence_hashes,
+            error_message=f"Image mount path not found: {image_mount_path}.",
+            duration_seconds=time.perf_counter() - start,
+        )
+
+    # Bounded recursive search for *.lnk files (cap at 500 to protect the budget).
+    lnk_files: list[str] = []
+    for root, _dirs, files in os.walk(image_mount_path):
+        for fn in files:
+            if fn.lower().endswith(".lnk"):
+                lnk_files.append(os.path.join(root, fn))
+                if len(lnk_files) >= 500:
+                    break
+        if len(lnk_files) >= 500:
+            break
+
+    if not lnk_files:
+        return _finalize(
+            "parse_lnk_files", execution_id, input_params, "no_results", "",
+            raw_output_dir, [], tracker, evidence_hashes,
+            error_message="",
+            duration_seconds=time.perf_counter() - start,
+        )
+
+    os.makedirs(raw_output_dir, exist_ok=True)
+    # Process the unique directories that directly contain LNK files (LECmd -d).
+    # Cap the number of directories to keep subprocess count bounded.
+    lnk_dirs = sorted({os.path.dirname(p) for p in lnk_files})[:50]
+    before = _list_csvs(raw_output_dir)
+    rc, stdout, stderr = 127, "", ""
+    for d in lnk_dirs:
+        rc, stdout, stderr = _run_command(["LECmd", "-d", d, "--csv", raw_output_dir, "-q"])
+        if rc == 127:
+            break  # tool unavailable — no point retrying on other directories
+
+    csv_paths = sorted(_list_csvs(raw_output_dir) - before)
+    rows = _parse_csv_files(csv_paths)
+    raw_output = _read_text(csv_paths) or stdout or stderr
+
+    parsed = []
+    for row in rows:
+        parsed.append(
+            {
+                "source_file": _row_get(row, ["SourceFile", "SourceFilename", "Source File"]),
+                "target_path": _row_get(
+                    row, ["LocalPath", "TargetIDAbsolutePath", "AbsolutePath", "CommonPath"]
+                ),
+                "target_created": _row_get(row, ["TargetCreated", "Target Created"]),
+                "target_modified": _row_get(row, ["TargetModified", "Target Modified"]),
+                "target_accessed": _row_get(row, ["TargetAccessed", "Target Accessed"]),
+                "file_size": _to_int(_row_get(row, ["FileSize", "File Size"])),
+                "relative_path": _row_get(row, ["RelativePath", "Relative Path"]),
+                "working_directory": _row_get(row, ["WorkingDirectory", "Working Directory"]),
+                "arguments": _row_get(row, ["Arguments"]),
+                "drive_type": _row_get(row, ["DriveType", "Drive Type"]),
+                "volume_label": _row_get(row, ["VolumeLabel", "Volume Label"]),
+                "volume_serial": _row_get(
+                    row, ["VolumeSerialNumber", "VolumeSerial", "Volume Serial Number"]
+                ),
+            }
+        )
+
+    status, err = _classify(rc, stderr, parsed, "LECmd")
+    return _finalize(
+        "parse_lnk_files", execution_id, input_params, status, raw_output,
+        raw_output_dir, parsed, tracker, evidence_hashes,
+        error_message=err, duration_seconds=time.perf_counter() - start,
+    )
+
+
+# --- NTFS USN Journal (MFTECmd in USN mode) ---
+
+
+def analyze_usn_journal(
+    image_mount_path: str,
+    tracker: ExecutionTracker,
+    raw_output_dir: str,
+    filename_filter: str | None = None,
+    evidence_hashes: dict | None = None,
+) -> ToolResponse:
+    """Parse the NTFS USN ($UsnJrnl:$J) journal for file change records using MFTECmd."""
+    execution_id = tracker.next_id()
+    start = time.perf_counter()
+    input_params = {"image_mount_path": image_mount_path, "filename_filter": filename_filter}
+
+    usn_path = _find_first(
+        [
+            os.path.join(image_mount_path, "$Extend", "$UsnJrnl:$J"),
+            os.path.join(image_mount_path, "$Extend", "$UsnJrnl"),
+            os.path.join(image_mount_path, "$UsnJrnl:$J"),
+            os.path.join(image_mount_path, "$UsnJrnl"),
+        ]
+    )
+    if usn_path is None:
+        return _finalize(
+            "analyze_usn_journal", execution_id, input_params, "error", "",
+            raw_output_dir, [], tracker, evidence_hashes,
+            error_message=f"$UsnJrnl:$J not found under {image_mount_path}.",
+            duration_seconds=time.perf_counter() - start,
+        )
+
+    os.makedirs(raw_output_dir, exist_ok=True)
+    before = _list_csvs(raw_output_dir)
+    # MFTECmd USN mode. (A pure-Python USN parser would be the fallback if MFTECmd
+    # is unavailable; none is bundled, so a missing tool surfaces as an error.)
+    rc, stdout, stderr = _run_command(
+        ["MFTECmd", "-f", usn_path, "--csv", raw_output_dir, "--fl", "usn"]
+    )
+    csv_paths = sorted(_list_csvs(raw_output_dir) - before)
+    # _parse_csv_files streams each row via csv.DictReader, so large journals are
+    # read incrementally rather than loaded whole.
+    rows = _parse_csv_files(csv_paths)
+    raw_output = _read_text(csv_paths) or stdout or stderr
+
+    parsed = []
+    for row in rows:
+        parent_path = _row_get(row, ["ParentPath", "Parent Path"])
+        filename = _row_get(row, ["Name", "FileName", "File Name"])
+        full_path = _row_get(row, ["FullPath", "Full Path", "Path"])
+        if not full_path and parent_path:
+            full_path = (
+                parent_path.rstrip("\\/") + "\\" + filename if filename else parent_path
+            )
+        usn_raw = _row_get(row, ["UpdateSequenceNumber", "Usn", "USN"])
+        parsed.append(
+            {
+                "timestamp": _row_get(row, ["UpdateTimestamp", "Timestamp", "UpdateTime"]),
+                "filename": filename,
+                "full_path": full_path,
+                "reason": _row_get(
+                    row, ["UpdateReasons", "Reason", "Reasons", "UpdateReason"]
+                ),
+                "file_attributes": _row_get(row, ["FileAttributes", "File Attributes"]),
+                "source_info": _row_get(row, ["SourceFile", "SourceInfo", "Source"]),
+                "usn": _to_int(usn_raw),
+                "parent_path": parent_path,
+                "update_sequence_number": usn_raw,
+            }
+        )
+
+    if filename_filter:
+        flt = filename_filter.lower()
+        parsed = [e for e in parsed if flt in e["filename"].lower()]
+
+    status, err = _classify(rc, stderr, parsed, "MFTECmd")
+    return _finalize(
+        "analyze_usn_journal", execution_id, input_params, status, raw_output,
+        raw_output_dir, parsed, tracker, evidence_hashes,
+        error_message=err, duration_seconds=time.perf_counter() - start,
+    )

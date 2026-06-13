@@ -8,6 +8,11 @@ from .tools import (
     extract_amcache,
     compute_file_hash,
     extract_strings,
+    analyze_memory_processes,
+    analyze_memory_network,
+    analyze_memory_malfind,
+    parse_lnk_files,
+    analyze_usn_journal,
 )
 
 __all__ = [
@@ -22,4 +27,9 @@ __all__ = [
     "extract_amcache",
     "compute_file_hash",
     "extract_strings",
+    "analyze_memory_processes",
+    "analyze_memory_network",
+    "analyze_memory_malfind",
+    "parse_lnk_files",
+    "analyze_usn_journal",
 ]
