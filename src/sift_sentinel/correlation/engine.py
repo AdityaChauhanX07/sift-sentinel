@@ -19,6 +19,7 @@ from .checks import (
     check_execution_count,
     check_hash_consistency,
 )
+from .crosssource import CROSS_SOURCE_CHECKS
 from ..evidence_graph.graph import EvidenceGraphManager
 from ..evidence_graph.models import FindingStatus
 
@@ -70,6 +71,21 @@ class CorrelationEngine:
                 all_results.extend(check(active_findings))
             except Exception as exc:  # one broken check must not kill the pipeline
                 errors.append(f"{check.__name__} raised {type(exc).__name__}: {exc}")
+
+        # Detect multi-source evidence and run cross-source checks if applicable
+        source_types = set()
+        for source in self.graph_manager.graph.evidence_sources:
+            source_types.add(source.source_type)
+
+        has_multi_source = len(source_types) > 1
+
+        if has_multi_source:
+            for check_fn in CROSS_SOURCE_CHECKS:
+                try:
+                    check_results = check_fn(active_findings)
+                    all_results.extend(check_results)
+                except Exception as e:
+                    errors.append(f"Cross-source check {check_fn.__name__} failed: {e}")
 
         contradictions_created: list[str] = []
         tasks_created: list[str] = []
