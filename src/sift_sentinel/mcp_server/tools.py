@@ -20,6 +20,7 @@ import time
 
 from .response_envelope import ToolResponse, create_response, ExecutionTracker
 from .injection_defense import scan_for_injection
+from .normalizer import normalize_timestamp, normalize_path, normalize_hash
 
 
 # --- command execution ---
@@ -177,6 +178,48 @@ def _injection_scan_block(content: str, file_path: str) -> dict:
     }
 
 
+def _normalize_parsed_output(
+    parsed: list[dict],
+    timestamp_keys: list[str] | None = None,
+    path_keys: list[str] | None = None,
+    hash_keys: list[str] | None = None,
+) -> list[dict]:
+    """Normalize timestamp, path, and hash fields in parsed tool output.
+
+    Adds normalized versions alongside originals:
+    - "timestamp_si_created" → also adds "timestamp_si_created_normalized"
+    - "path" → also adds "path_normalized"
+    - "file_hash" → also adds "file_hash_normalized"
+
+    This preserves raw values for exact matching while enabling format-aware comparison.
+    """
+    if not parsed or not isinstance(parsed, list):
+        return parsed
+
+    timestamp_keys = timestamp_keys or []
+    path_keys = path_keys or []
+    hash_keys = hash_keys or []
+
+    for entry in parsed:
+        if not isinstance(entry, dict):
+            continue
+        for key in timestamp_keys:
+            if key in entry and entry[key]:
+                normalized = normalize_timestamp(str(entry[key]))
+                if normalized:
+                    entry[f"{key}_normalized"] = normalized
+        for key in path_keys:
+            if key in entry and entry[key]:
+                entry[f"{key}_normalized"] = normalize_path(str(entry[key]))
+        for key in hash_keys:
+            if key in entry and entry[key]:
+                normalized = normalize_hash(str(entry[key]))
+                if normalized:
+                    entry[f"{key}_normalized"] = normalized
+
+    return parsed
+
+
 # --- MFT timeline ---
 
 
@@ -273,10 +316,21 @@ def extract_mft_timeline(
         parsed = [e for e in parsed if in_range(e["timestamp_si_created"])]
 
     status, err = _classify(rc, stderr, parsed, tool_binary)
+    parsed = _normalize_parsed_output(
+        parsed,
+        timestamp_keys=[
+            "timestamp_si_created", "timestamp_si_modified",
+            "timestamp_fn_created", "timestamp_fn_modified",
+        ],
+        path_keys=["filename", "path"],
+    )
     return _finalize(
         "extract_mft_timeline", execution_id, input_params, status, raw_output,
         raw_output_dir, parsed, tracker, evidence_hashes,
-        normalized_fields={"timestamps_format": "tool-native"},
+        normalized_fields={
+            "timestamps_format": "ISO 8601",
+            "paths_format": "forward-slash normalized",
+        },
         error_message=err, duration_seconds=time.perf_counter() - start,
     )
 
@@ -336,9 +390,18 @@ def parse_prefetch(
         parsed = [e for e in parsed if flt in e["executable_name"].lower()]
 
     status, err = _classify(rc, stderr, parsed, "PECmd")
+    parsed = _normalize_parsed_output(
+        parsed,
+        timestamp_keys=["last_run_time"],
+        path_keys=["source_file"],
+    )
     return _finalize(
         "parse_prefetch", execution_id, input_params, status, raw_output,
         raw_output_dir, parsed, tracker, evidence_hashes,
+        normalized_fields={
+            "timestamps_format": "ISO 8601",
+            "paths_format": "forward-slash normalized",
+        },
         error_message=err, duration_seconds=time.perf_counter() - start,
     )
 
@@ -476,9 +539,11 @@ def parse_event_logs(
         parsed = [e for e in parsed if e["event_id"] in wanted]
 
     status, err = _classify(rc, stderr, parsed, "EvtxECmd")
+    parsed = _normalize_parsed_output(parsed, timestamp_keys=["timestamp"])
     return _finalize(
         "parse_event_logs", execution_id, input_params, status, raw_output,
         raw_output_dir, parsed, tracker, evidence_hashes,
+        normalized_fields={"timestamps_format": "ISO 8601"},
         error_message=err, duration_seconds=time.perf_counter() - start,
     )
 
@@ -546,9 +611,20 @@ def extract_amcache(
         )
 
     status, err = _classify(rc, stderr, parsed, tool_binary)
+    parsed = _normalize_parsed_output(
+        parsed,
+        timestamp_keys=["last_modified", "install_date"],
+        path_keys=["file_path"],
+        hash_keys=["sha1_hash"],
+    )
     return _finalize(
         "extract_amcache", execution_id, input_params, status, raw_output,
         raw_output_dir, parsed, tracker, evidence_hashes,
+        normalized_fields={
+            "timestamps_format": "ISO 8601",
+            "paths_format": "forward-slash normalized",
+            "hashes_format": "lowercase hex",
+        },
         error_message=err, duration_seconds=time.perf_counter() - start,
     )
 
@@ -1011,9 +1087,18 @@ def parse_lnk_files(
         )
 
     status, err = _classify(rc, stderr, parsed, "LECmd")
+    parsed = _normalize_parsed_output(
+        parsed,
+        timestamp_keys=["target_created", "target_modified", "target_accessed"],
+        path_keys=["target_path", "source_file"],
+    )
     return _finalize(
         "parse_lnk_files", execution_id, input_params, status, raw_output,
         raw_output_dir, parsed, tracker, evidence_hashes,
+        normalized_fields={
+            "timestamps_format": "ISO 8601",
+            "paths_format": "forward-slash normalized",
+        },
         error_message=err, duration_seconds=time.perf_counter() - start,
     )
 
@@ -1093,8 +1178,17 @@ def analyze_usn_journal(
         parsed = [e for e in parsed if flt in e["filename"].lower()]
 
     status, err = _classify(rc, stderr, parsed, "MFTECmd")
+    parsed = _normalize_parsed_output(
+        parsed,
+        timestamp_keys=["timestamp"],
+        path_keys=["filename", "full_path"],
+    )
     return _finalize(
         "analyze_usn_journal", execution_id, input_params, status, raw_output,
         raw_output_dir, parsed, tracker, evidence_hashes,
+        normalized_fields={
+            "timestamps_format": "ISO 8601",
+            "paths_format": "forward-slash normalized",
+        },
         error_message=err, duration_seconds=time.perf_counter() - start,
     )

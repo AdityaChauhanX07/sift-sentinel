@@ -295,10 +295,22 @@ class AnalysisWorkflow:
             except (OSError, IOError):
                 pass
 
+        # Build normalized outputs from parsed tool responses
+        normalized_outputs = {}
+        for response in self.tracker.get_log():
+            if response.parsed_output:
+                try:
+                    normalized_outputs[response.execution_id] = json.dumps(
+                        response.parsed_output, default=str
+                    )
+                except (TypeError, ValueError):
+                    pass
+
         return {
             "evidence_sources": evidence_sources,
             "raw_outputs": raw_outputs,
             "raw_output_paths": raw_output_paths,
+            "normalized_outputs": normalized_outputs,
         }
 
     def sync_metadata(self) -> None:
