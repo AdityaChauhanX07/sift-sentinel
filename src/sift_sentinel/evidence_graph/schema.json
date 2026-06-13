@@ -1,0 +1,365 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SIFT Sentinel Evidence Graph",
+  "description": "Schema for the evidence graph produced by SIFT Sentinel. Every finding is anchored to a specific artifact with a traceable tool execution.",
+  "type": "object",
+  "required": [
+    "case_id",
+    "evidence_sources",
+    "findings",
+    "contradictions",
+    "investigation_queue",
+    "metadata"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "evidence_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "source_type",
+          "path",
+          "sha256",
+          "mounted_at"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "disk_image",
+              "memory_capture",
+              "log_file",
+              "network_capture",
+              "unknown"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "mounted_at": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_id",
+          "status",
+          "summary"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "pattern": "^F-\\d{3,}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "HYPOTHESIS",
+              "INFERRED",
+              "CONFIRMED",
+              "ELIMINATED"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "evidence_anchor": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "source_id": {
+                "type": "string"
+              },
+              "tool_execution_id": {
+                "type": "string"
+              },
+              "artifact_path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "file_hash": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "offset": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "log_entry": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "raw_output_reference": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "reasoning_chain": {
+            "type": "object",
+            "properties": {
+              "premises": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "logic": {
+                "type": "string"
+              },
+              "corroboration_type": {
+                "type": "string",
+                "enum": [
+                  "independent_sources",
+                  "single_source_corroborated",
+                  "single_source_narrated",
+                  "not_applicable"
+                ]
+              },
+              "chain_rendered": {
+                "type": "boolean"
+              }
+            }
+          },
+          "mitre_attack": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "linked_findings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contradictions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validation_results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "validator_name",
+                "verdict",
+                "detail",
+                "timestamp"
+              ],
+              "properties": {
+                "validator_name": {
+                  "type": "string"
+                },
+                "verdict": {
+                  "type": "string",
+                  "enum": [
+                    "PASS",
+                    "FAIL_HARD",
+                    "FAIL_SOFT",
+                    "NOT_APPLICABLE"
+                  ]
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "promotion_history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "from_status",
+                "to_status",
+                "reason",
+                "triggered_by",
+                "timestamp"
+              ],
+              "properties": {
+                "from_status": {
+                  "type": "string"
+                },
+                "to_status": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "triggered_by": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "last_updated": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "contradiction_id",
+          "finding_a",
+          "finding_b",
+          "description",
+          "status"
+        ],
+        "properties": {
+          "contradiction_id": {
+            "type": "string",
+            "pattern": "^C-\\d{3,}$"
+          },
+          "finding_a": {
+            "type": "string"
+          },
+          "finding_b": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "resolution": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "follow_up_tasks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "RESOLVED",
+              "WONT_RESOLVE"
+            ]
+          }
+        }
+      }
+    },
+    "investigation_queue": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "description",
+          "triggered_by"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^T-\\d{3,}$"
+          },
+          "description": {
+            "type": "string"
+          },
+          "triggered_by": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "DEFERRED"
+            ]
+          },
+          "result_finding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "agent_version": {
+          "type": "string"
+        },
+        "total_tool_executions": {
+          "type": "integer"
+        },
+        "analysis_start": {
+          "type": "string"
+        },
+        "analysis_end": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -6,6 +6,12 @@ from .injection_defense import (
     InjectionScanResult,
     KNOWN_INJECTION_PATTERNS,
 )
+from .normalizer import (
+    normalize_timestamp,
+    normalize_path,
+    normalize_hash,
+    normalize_offset,
+)
 from .tools import (
     extract_mft_timeline,
     parse_prefetch,
@@ -42,4 +48,8 @@ __all__ = [
     "get_defense_summary",
     "InjectionScanResult",
     "KNOWN_INJECTION_PATTERNS",
+    "normalize_timestamp",
+    "normalize_path",
+    "normalize_hash",
+    "normalize_offset",
 ]

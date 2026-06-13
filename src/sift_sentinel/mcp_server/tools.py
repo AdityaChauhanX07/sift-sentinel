@@ -19,6 +19,7 @@ import subprocess
 import time
 
 from .response_envelope import ToolResponse, create_response, ExecutionTracker
+from .injection_defense import scan_for_injection
 
 
 # --- command execution ---
@@ -152,6 +153,28 @@ def _find_first(candidates) -> str | None:
         if path and os.path.isfile(path):
             return path
     return None
+
+
+def _injection_scan_block(content: str, file_path: str) -> dict:
+    """Scan evidence content for prompt injection and build the report block.
+
+    Returns the ``injection_scan`` sub-dict attached to a tool's parsed output.
+    A detected injection is itself a forensic finding — the attacker may be
+    trying to manipulate automated analysis.
+    """
+    result = scan_for_injection(content, file_path)
+    if not result.injection_detected:
+        return {"detected": False}
+    return {
+        "detected": True,
+        "match_count": len(result.matches),
+        "patterns_found": list(set(m["pattern"] for m in result.matches)),
+        "note": (
+            "Prompt injection strings detected in evidence. This is a forensic "
+            "finding — the attacker may be attempting to manipulate automated "
+            "analysis tools."
+        ),
+    }
 
 
 # --- MFT timeline ---
@@ -380,9 +403,20 @@ def analyze_registry_hive(
     cmd += ["-p", plugin] if plugin else ["-a"]
     rc, stdout, stderr = _run_command(cmd)
     raw_output = stdout or stderr
-    parsed = _parse_regripper(stdout)
+    sections = _parse_regripper(stdout)
 
-    status, err = _classify(rc, stderr, parsed, "rip")
+    # Classify on the parsed sections (preserves no_results detection) before
+    # wrapping them alongside the injection scan.
+    status, err = _classify(rc, stderr, sections, "rip")
+
+    # Registry values are a documented prompt-injection vector — scan the
+    # combined section text for manipulation attempts targeting the analyst.
+    combined = "\n".join(s.get("output", "") for s in sections)
+    parsed = {
+        "sections": sections,
+        "injection_scan": _injection_scan_block(combined, hive_path),
+    }
+
     return _finalize(
         "analyze_registry_hive", execution_id, input_params, status, raw_output,
         raw_output_dir, parsed, tracker, evidence_hashes,
@@ -633,6 +667,10 @@ def extract_strings(
         "strings": unique[:1000],
         "truncated": truncated,
     }
+
+    # Scan the extracted strings for prompt injection attempts targeting the
+    # analyst. A hit is a suspicious artifact worth investigating, not a gate.
+    parsed["injection_scan"] = _injection_scan_block("\n".join(unique), file_path)
 
     if rc == 127:
         status, err = "error", (
