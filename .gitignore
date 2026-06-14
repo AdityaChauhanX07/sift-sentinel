@@ -25,3 +25,6 @@ logs/execution_log.json
 !logs/.gitkeep
 !logs/raw/.gitkeep
 !logs/evidence_graph_snapshots/.gitkeep
+
+# Design source files (not deployed)
+claude-design/

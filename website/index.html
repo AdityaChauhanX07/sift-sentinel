@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="sample-data.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: #08090b; color: #e9e9e7; font-family: 'JetBrains Mono', ui-monospace, monospace; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  ::selection { background: rgba(223,154,77,0.28); color: #fff; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 6px; border: 2px solid #08090b; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+  @keyframes blink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+  @keyframes heroIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes viewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes dotPulse { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+  @keyframes barGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @media print {
+    @page { margin: 14mm; }
+    html, body { background: #fff !important; }
+    .no-print { display: none !important; }
+    #report-paper { box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; max-width: 100% !important; }
+    .print-region { padding: 0 !important; }
+  }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #08090b;">
+
+<div style="display: {{ dLanding }};">
+<div style="position: relative;">
+
+  <!-- landing nav -->
+  <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1180px; margin: 0 auto; padding: 26px 40px;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <div style="width: 26px; height: 26px; border: 1.5px solid #df9a4d; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: #df9a4d;">SS</div>
+      <span style="font-size: 14px; font-weight: 500; letter-spacing: 0.2px; color: #e9e9e7;">sift sentinel</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 30px; font-size: 13px; color: #8c8f94;">
+      <span style="cursor: default;">overview</span>
+      <span style="cursor: default;">validators</span>
+      <span style="cursor: default;">trust model</span>
+      <span onClick="{{ enterConsole }}" style="display: inline-flex; align-items: center; gap: 7px; color: #e9e9e7; cursor: pointer; padding: 7px 14px; border: 1px solid rgba(255,255,255,0.14); border-radius: 7px; transition: border-color .18s ease, background .18s ease;" style-hover="display: inline-flex; align-items: center; gap: 7px; color: #fff; cursor: pointer; padding: 7px 14px; border: 1px solid rgba(223,154,77,0.55); border-radius: 7px; background: rgba(223,154,77,0.08);">enter console →</span>
+    </div>
+  </div>
+
+  <!-- hero -->
+  <div style="max-width: 880px; margin: 0 auto; padding: 70px 40px 30px;">
+    <div style="text-align: center; font-size: 11px; letter-spacing: 4px; color: #56585c; margin-bottom: 54px;">SIFT&nbsp;SENTINEL&nbsp;&nbsp;·&nbsp;&nbsp;GROUNDED&nbsp;FORENSIC&nbsp;REASONING</div>
+
+    <!-- terminal -->
+    <div style="border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; background: linear-gradient(180deg, #0c0e11 0%, #0a0b0e 100%); overflow: hidden; box-shadow: 0 30px 80px -40px rgba(0,0,0,0.9);">
+      <div style="display: flex; align-items: center; gap: 8px; padding: 13px 16px; border-bottom: 1px solid rgba(255,255,255,0.07);">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.13);"></div>
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.13);"></div>
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.13);"></div>
+        <span style="margin-left: 8px; font-size: 11.5px; color: #56585c; letter-spacing: 0.5px;">sift-sentinel · analysis run</span>
+        <span style="margin-left: auto; font-size: 10.5px; letter-spacing: 1.5px; color: #3c3f45;">TEST-001</span>
+      </div>
+      <div style="padding: 22px 24px 24px; min-height: 270px; font-size: 13.5px; line-height: 1.1;">
+        <sc-for list="{{ heroLines }}" as="ln" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: 96px 1fr auto; align-items: baseline; gap: 16px; margin-bottom: 9px;">
+            <span style="color: {{ ln.labelColor }};">{{ ln.label }}</span>
+            <span style="color: {{ ln.textColor }};">{{ ln.text }}</span>
+            <span style="color: {{ ln.tc }}; font-weight: 500; white-space: nowrap;">{{ ln.tail }}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ heroTyping }}" hint-placeholder-val="{{ false }}">
+          <span style="display: inline-block; width: 8px; height: 15px; background: #df9a4d; animation: blink 1s step-end infinite; vertical-align: middle;"></span>
+        </sc-if>
+      </div>
+    </div>
+
+    <p style="text-align: center; font-size: 16px; line-height: 1.65; color: #b6b8bb; max-width: 660px; margin: 40px auto 0; font-weight: 400;">A grounded forensic reasoning engine. <span style="color: #6a6d72;">Every finding is anchored to a specific, human-verifiable artifact — and factual hallucinations are caught by deterministic code, not by more AI.</span></p>
+
+    <div style="display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 34px;">
+      <span onClick="{{ enterConsole }}" style="display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: #08090b; background: #df9a4d; padding: 11px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: transform .15s ease, background .15s ease;" style-hover="display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: #08090b; background: #ecae64; padding: 11px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transform: translateY(-1px);">open the evidence graph →</span>
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #8c8f94; padding: 11px 18px; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; cursor: pointer; transition: color .15s, border-color .15s;" style-hover="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #e9e9e7; padding: 11px 18px; border: 1px solid rgba(255,255,255,0.22); border-radius: 8px; cursor: pointer;">github ↗</span>
+    </div>
+
+    <div style="text-align: center; font-size: 12px; color: #4a4d52; margin-top: 30px; letter-spacing: 0.3px;">case TEST-001 loaded&nbsp;&nbsp;·&nbsp;&nbsp;10 findings&nbsp;&nbsp;·&nbsp;&nbsp;6 evidence sources&nbsp;&nbsp;·&nbsp;&nbsp;1 fabrication eliminated</div>
+  </div>
+
+  <!-- thesis -->
+  <div style="max-width: 1180px; margin: 0 auto; padding: 130px 40px 0;">
+    <div style="max-width: 720px;">
+      <div style="font-size: 11px; letter-spacing: 3px; color: #56585c; margin-bottom: 26px;">THE THESIS</div>
+      <h2 style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 56px; line-height: 1.04; letter-spacing: -1.5px; margin: 0; color: #f3f3f1;">Find less.<br>Fabricate nothing.</h2>
+      <p style="font-size: 16px; line-height: 1.7; color: #9a9da1; margin: 30px 0 0; max-width: 600px;">Sentinel deliberately trades recall for precision. It reports fewer findings than a naive agent, but every finding is real and verifiable. A report that finds less but invents nothing beats one that finds more but fabricates some of it.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-top: 56px; border-top: 1px solid rgba(255,255,255,0.10);">
+      <div style="padding: 28px 32px 28px 0; border-right: 1px solid rgba(255,255,255,0.10);">
+        <div style="font-size: 12px; letter-spacing: 1px; color: #6a6d72; margin-bottom: 16px;">A NAIVE AGENT</div>
+        <div style="display: flex; flex-direction: column; gap: 11px; font-size: 13.5px; color: #8c8f94;">
+          <div style="display: flex; gap: 12px;"><span style="color: #d76a5f;">~</span><span>maximises findings — including invented ones</span></div>
+          <div style="display: flex; gap: 12px;"><span style="color: #d76a5f;">~</span><span>citations point at artifacts that may not exist</span></div>
+          <div style="display: flex; gap: 12px;"><span style="color: #d76a5f;">~</span><span>hallucinations corrected by more AI, if at all</span></div>
+        </div>
+      </div>
+      <div style="padding: 28px 0 28px 32px;">
+        <div style="font-size: 12px; letter-spacing: 1px; color: #df9a4d; margin-bottom: 16px;">SIFT SENTINEL</div>
+        <div style="display: flex; flex-direction: column; gap: 11px; font-size: 13.5px; color: #c4c6c9;">
+          <div style="display: flex; gap: 12px;"><span style="color: #5fbf90;">✓</span><span>every finding anchored to one verifiable artifact</span></div>
+          <div style="display: flex; gap: 12px;"><span style="color: #5fbf90;">✓</span><span>five deterministic validators — zero AI in the loop</span></div>
+          <div style="display: flex; gap: 12px;"><span style="color: #5fbf90;">✓</span><span>eliminated findings shown, not hidden — visible self-correction</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--LANDING-->
+
+  <!-- landing footer -->
+  <div style="max-width: 1180px; margin: 130px auto 0; padding: 30px 40px 60px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #4a4d52;">
+    <span>sift sentinel · find evil! · grounded forensic reasoning engine</span>
+    <span style="letter-spacing: 1px;">agent v0.1.0 · trust through traceability</span>
+  </div>
+
+</div>
+</div>
+
+<div style="display: {{ dConsole }};">
+<div style="display: grid; grid-template-columns: 232px 1fr; min-height: 100vh;">
+
+  <!-- sidebar -->
+  <div class="no-print" style="border-right: 1px solid rgba(255,255,255,0.08); padding: 22px 16px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;">
+    <div onClick="{{ goLanding }}" style="display: flex; align-items: center; gap: 10px; padding: 4px 8px 22px; cursor: pointer;">
+      <div style="width: 26px; height: 26px; border: 1.5px solid #df9a4d; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #df9a4d;">SS</div>
+      <div style="display: flex; flex-direction: column; line-height: 1.25;">
+        <span style="font-size: 13px; font-weight: 500; color: #e9e9e7;">sift sentinel</span>
+        <span style="font-size: 10px; color: #56585c; letter-spacing: 0.5px;">evidence graph</span>
+      </div>
+    </div>
+
+    <div style="padding: 10px 9px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; margin-bottom: 18px; background: rgba(255,255,255,0.015);">
+      <div style="font-size: 10px; letter-spacing: 1.5px; color: #56585c; margin-bottom: 5px;">CASE</div>
+      <div style="font-size: 13px; color: #e9e9e7; letter-spacing: 0.5px;">{{ caseMeta.caseId }}</div>
+      <div style="font-size: 10.5px; color: #6a6d72; margin-top: 3px;">{{ caseMeta.findingCount }} findings · {{ caseMeta.sourceCount }} sources</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <sc-for list="{{ navItems }}" as="nav" hint-placeholder-count="7">
+        <div onClick="{{ nav.onClick }}" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; color: {{ nav.color }}; background: {{ nav.bg }}; border-left: 2px solid {{ nav.edge }}; transition: background .15s ease, color .15s ease;">
+          <span>{{ nav.label }}</span>
+          <sc-if value="{{ nav.hasCount }}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: {{ nav.countColor }};">{{ nav.count }}</span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top: auto; padding: 14px 9px 4px; border-top: 1px solid rgba(255,255,255,0.07); font-size: 10.5px; color: #4a4d52; line-height: 1.7;">
+      <div>agent v{{ caseMeta.agentVersion }}</div>
+      <div>{{ caseMeta.toolExec }} tool executions</div>
+      <div style="color: #5fbf90; margin-top: 4px;">● integrity verified</div>
+    </div>
+  </div>
+
+  <!-- main -->
+  <div style="min-width: 0; display: flex; flex-direction: column;">
+    <!-- context bar -->
+    <div class="no-print" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 36px; border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; background: rgba(8,9,11,0.82); backdrop-filter: blur(12px); z-index: 5;">
+      <div style="display: flex; flex-direction: column; gap: 3px;">
+        <div style="font-size: 11px; letter-spacing: 1.5px; color: #56585c;">{{ caseMeta.caseId }} / {{ viewCrumb }}</div>
+        <div style="font-size: 17px; color: #f1f1ef; font-weight: 500;">{{ viewTitle }}</div>
+      </div>
+      <div style="text-align: right; font-size: 11px; color: #6a6d72; line-height: 1.6;">
+        <div>analysis {{ caseMeta.startShort }} → {{ caseMeta.endShort }}</div>
+        <div style="color: #4a4d52;">duration {{ caseMeta.duration }}</div>
+      </div>
+    </div>
+
+    <div class="print-region" style="padding: 32px 36px 80px; flex: 1;">
+<div style="display: {{ dDashboard }};">
+<div style="animation: viewIn .35s ease both; max-width: 1080px;">
+
+  <!-- thesis banner -->
+  <div style="border: 1px solid rgba(223,154,77,0.25); background: linear-gradient(180deg, rgba(223,154,77,0.05), rgba(223,154,77,0.01)); border-radius: 12px; padding: 26px 30px; margin-bottom: 36px; display: flex; align-items: center; gap: 30px;">
+    <div style="flex: 1;">
+      <div style="font-size: 11px; letter-spacing: 2px; color: #df9a4d; margin-bottom: 12px;">PRECISION OVER RECALL</div>
+      <div style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.5px; color: #f1f1ef; line-height: 1.2;">This case reports fewer findings — and fabricates none.</div>
+      <div style="font-size: 13.5px; color: #9a9da1; margin-top: 10px; line-height: 1.6; max-width: 620px;">Every finding below is anchored to a verifiable artifact. One fabricated finding was caught by a deterministic validator and eliminated — kept visible as proof of self-correction.</div>
+    </div>
+    <div style="text-align: right; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 30px;">
+      <div style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 46px; color: #df9a4d; line-height: 1;">{{ valTotals.runs }}</div>
+      <div style="font-size: 11px; color: #6a6d72; margin-top: 6px; letter-spacing: 0.5px;">validator runs<br>0 fabrications survived</div>
+    </div>
+  </div>
+
+  <!-- metric tiles -->
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; overflow: hidden; margin-bottom: 40px;">
+    <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="8">
+      <div style="background: #0a0c0f; padding: 20px 20px 18px; transition: background .18s ease;" style-hover="background: #0d0f13; padding: 20px 20px 18px;">
+        <div style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 34px; line-height: 1; color: {{ m.color }};">{{ m.value }}</div>
+        <div style="font-size: 12.5px; color: #c4c6c9; margin-top: 11px;">{{ m.label }}</div>
+        <div style="font-size: 10.5px; color: #56585c; margin-top: 3px;">{{ m.sub }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- breakdowns -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+    <div>
+      <div style="font-size: 11px; letter-spacing: 2px; color: #56585c; margin-bottom: 20px;">FINDINGS BY STATUS</div>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <sc-for list="{{ statusBars }}" as="b" hint-placeholder-count="4">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px;">
+              <span style="font-size: 13px; color: {{ b.color }};">{{ b.label }}</span>
+              <span style="font-size: 12px; color: #6a6d72;">{{ b.count }} · {{ b.pct }}%</span>
+            </div>
+            <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+              <div style="height: 100%; width: {{ b.pct }}%; background: {{ b.color }}; border-radius: 4px; opacity: 0.85;"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 11px; letter-spacing: 2px; color: #56585c; margin-bottom: 20px;">FINDINGS BY CATEGORY</div>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <sc-for list="{{ catBars }}" as="b" hint-placeholder-count="5">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px;">
+              <span style="font-size: 13px; color: #c4c6c9;">{{ b.label }}</span>
+              <span style="font-size: 12px; color: #6a6d72;">{{ b.count }} · {{ b.pct }}%</span>
+            </div>
+            <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+              <div style="height: 100%; width: {{ b.pct }}%; background: #df9a4d; border-radius: 4px; opacity: 0.55;"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div style="display: {{ dFindings }};">
+<div style="animation: viewIn .35s ease both; max-width: 1080px;">
+
+  <!-- filter rail -->
+  <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 11px; padding: 18px 20px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,0.012);">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="font-size: 10.5px; letter-spacing: 1.5px; color: #56585c; width: 70px;">STATUS</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+        <sc-for list="{{ statusFilters }}" as="c" hint-placeholder-count="5">
+          <span onClick="{{ c.onClick }}" style="font-size: 12px; padding: 4px 11px; border-radius: 6px; cursor: pointer; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: {{ c.color }}; transition: all .15s ease;">{{ c.label }}</span>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="font-size: 10.5px; letter-spacing: 1.5px; color: #56585c; width: 70px;">CATEGORY</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+        <sc-for list="{{ categoryFilters }}" as="c" hint-placeholder-count="6">
+          <span onClick="{{ c.onClick }}" style="font-size: 12px; padding: 4px 11px; border-radius: 6px; cursor: pointer; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: {{ c.color }}; transition: all .15s ease;">{{ c.label }}</span>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="font-size: 10.5px; letter-spacing: 1.5px; color: #56585c; width: 70px;">VERDICT</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+        <sc-for list="{{ verdictFilters }}" as="c" hint-placeholder-count="4">
+          <span onClick="{{ c.onClick }}" style="font-size: 12px; padding: 4px 11px; border-radius: 6px; cursor: pointer; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: {{ c.color }}; transition: all .15s ease;">{{ c.label }}</span>
+        </sc-for>
+        <span style="width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px;"></span>
+        <sc-for list="{{ contraFilters }}" as="c" hint-placeholder-count="2">
+          <span onClick="{{ c.onClick }}" style="font-size: 12px; padding: 4px 11px; border-radius: 6px; cursor: pointer; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: {{ c.color }}; transition: all .15s ease;">{{ c.label }}</span>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size: 12px; color: #6a6d72; margin-bottom: 16px;">showing <span style="color: #e9e9e7;">{{ filteredCount }}</span> of {{ totalFindings }} findings</div>
+
+  <!-- finding cards -->
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <sc-for list="{{ filteredFindings }}" as="f" hint-placeholder-count="6">
+      <div onClick="{{ f.onClick }}" style="border: 1px solid rgba(255,255,255,0.08); border-radius: 11px; padding: 18px 20px; cursor: pointer; background: #0a0c0f; transition: border-color .16s ease, background .16s ease, transform .16s ease;" style-hover="border: 1px solid rgba(223,154,77,0.4); border-radius: 11px; padding: 18px 20px; cursor: pointer; background: #0c0e12; transform: translateY(-1px);">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <span style="font-size: 14px; font-weight: 600; color: #df9a4d; letter-spacing: 0.5px;">{{ f.id }}</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; padding: 3px 9px; border-radius: 20px; color: {{ f.statusColor }}; background: {{ f.statusBg }}; border: 1px solid {{ f.statusBorder }};"><span style="width: 5px; height: 5px; border-radius: 50%; background: {{ f.statusColor }};"></span>{{ f.statusLabel }}</span>
+          <span style="font-size: 11.5px; color: #8c8f94; padding: 3px 9px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">{{ f.categoryLabel }}</span>
+          <span style="font-size: 11.5px; color: #6a8cba; letter-spacing: 0.5px;">{{ f.mitreStr }}</span>
+          <span style="margin-left: auto; display: flex; align-items: center; gap: 14px;">
+            <span style="display: flex; align-items: center; gap: 5px;">
+              <span style="display: flex; gap: 2px;">
+                <span style="width: 3px; height: 12px; border-radius: 1px; background: {{ f.corrColor }}; opacity: {{ f.corrOp1 }};"></span>
+                <span style="width: 3px; height: 12px; border-radius: 1px; background: {{ f.corrColor }}; opacity: {{ f.corrOp2 }};"></span>
+                <span style="width: 3px; height: 12px; border-radius: 1px; background: {{ f.corrColor }}; opacity: {{ f.corrOp3 }};"></span>
+              </span>
+              <span style="font-size: 10.5px; color: #6a6d72;">{{ f.corrLabel }}</span>
+            </span>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: {{ f.validColor }};"><span style="width: 5px; height: 5px; border-radius: 50%; background: {{ f.validColor }};"></span>{{ f.validText }}</span>
+          </span>
+        </div>
+        <p style="font-size: 13.5px; line-height: 1.6; color: {{ f.summaryColor }}; text-decoration: {{ f.summaryDeco }}; margin: 13px 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ f.summary }}</p>
+        <div style="display: flex; align-items: center; gap: 16px; margin-top: 12px; font-size: 11px; color: #6a6d72;">
+          <span style="color: #d9a04b;">{{ f.contraTag }}</span>
+          <span>{{ f.flagTag }}</span>
+          <span style="margin-left: auto; color: #4a4d52;">{{ f.checksTotal }} validators · open →</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</div>
+
+<div style="display: {{ dDetail }};">
+<div style="animation: viewIn .35s ease both; max-width: 1000px;">
+
+  <span onClick="{{ backToFindings }}" style="display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: #8c8f94; cursor: pointer; margin-bottom: 24px; transition: color .15s ease;" style-hover="display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: #df9a4d; cursor: pointer; margin-bottom: 24px;">← all findings</span>
+
+  <!-- header -->
+  <div style="display: flex; align-items: flex-start; gap: 18px; margin-bottom: 18px;">
+    <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 38px; color: #df9a4d; letter-spacing: -0.5px; line-height: 1;">{{ selected.id }}</span>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 3px;">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; padding: 4px 11px; border-radius: 20px; color: {{ selected.statusColor }}; background: {{ selected.statusBg }}; border: 1px solid {{ selected.statusBorder }};"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ selected.statusColor }};"></span>{{ selected.statusLabel }}</span>
+        <span style="font-size: 12px; color: #8c8f94; padding: 4px 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">{{ selected.categoryLabel }}</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px;">
+          <span style="display: flex; gap: 2px;">
+            <span style="width: 3px; height: 13px; border-radius: 1px; background: {{ selected.corrColor }}; opacity: {{ selected.corrOp1 }};"></span>
+            <span style="width: 3px; height: 13px; border-radius: 1px; background: {{ selected.corrColor }}; opacity: {{ selected.corrOp2 }};"></span>
+            <span style="width: 3px; height: 13px; border-radius: 1px; background: {{ selected.corrColor }}; opacity: {{ selected.corrOp3 }};"></span>
+          </span>
+          <span style="font-size: 11.5px; color: {{ selected.corrColor }};">{{ selected.corrLabel }} corroboration</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size: 15px; line-height: 1.7; color: {{ selected.summaryColor }}; text-decoration: {{ selected.summaryDeco }}; margin: 0 0 30px; max-width: 820px;">{{ selected.summary }}</p>
+
+  <!-- evidence anchor -->
+  <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; margin-bottom: 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <span style="font-size: 11px; letter-spacing: 2px; color: #df9a4d;">EVIDENCE ANCHOR</span>
+      <span style="font-size: 11px; color: #5fbf90;">● verifiable artifact</span>
+    </div>
+    <div style="padding: 18px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; margin-bottom: 16px;">
+        <div><div style="font-size: 10.5px; letter-spacing: 1px; color: #56585c; margin-bottom: 4px;">SOURCE</div><div style="font-size: 13px; color: #c4c6c9;">{{ selected.anchor.sourceId }}</div></div>
+        <div><div style="font-size: 10.5px; letter-spacing: 1px; color: #56585c; margin-bottom: 4px;">TOOL EXECUTION</div><div style="font-size: 13px; color: #c4c6c9;">{{ selected.anchor.toolExec }}</div></div>
+        <div><div style="font-size: 10.5px; letter-spacing: 1px; color: #56585c; margin-bottom: 4px;">FILE HASH</div><div style="font-size: 13px; color: #c4c6c9; word-break: break-all;">{{ selected.anchor.fileHashD }}</div></div>
+        <div><div style="font-size: 10.5px; letter-spacing: 1px; color: #56585c; margin-bottom: 4px;">BYTE OFFSET / RAW REF</div><div style="font-size: 13px; color: #c4c6c9;">{{ selected.anchor.offsetD }} · {{ selected.anchor.rawRefD }}</div></div>
+      </div>
+      <div style="font-size: 10.5px; letter-spacing: 1px; color: #56585c; margin-bottom: 6px;">ARTIFACT PATH</div>
+      <div style="font-size: 12.5px; color: #e0d3b8; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 7px; padding: 10px 13px; word-break: break-all; margin-bottom: 14px;">{{ selected.anchor.artifactPathD }}</div>
+      <div style="font-size: 10.5px; letter-spacing: 1px; color: #56585c; margin-bottom: 6px;">LOG ENTRY</div>
+      <pre style="font-size: 12.5px; color: #a9c2a9; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 7px; padding: 11px 13px; margin: 0; white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-family: 'JetBrains Mono', monospace;">{{ selected.anchor.logEntryD }}</pre>
+    </div>
+  </div>
+
+  <!-- two column -->
+  <div style="display: grid; grid-template-columns: 1.45fr 1fr; gap: 28px; align-items: start;">
+
+    <!-- left: reasoning + validation -->
+    <div style="display: flex; flex-direction: column; gap: 30px;">
+      <div>
+        <div style="font-size: 11px; letter-spacing: 2px; color: #56585c; margin-bottom: 16px;">REASONING CHAIN</div>
+        <div style="font-size: 12.5px; color: #6a6d72; font-style: italic; margin-bottom: 14px;">{{ selected.reasonNote }}</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+          <sc-for list="{{ selected.reasoning.premisesList }}" as="p" hint-placeholder-count="3">
+            <div style="display: flex; gap: 12px; font-size: 13px; line-height: 1.6; color: #b6b8bb;"><span style="color: #56585c; flex-shrink: 0;">{{ p.n }}</span><span>{{ p.text }}</span></div>
+          </sc-for>
+        </div>
+        <div style="font-size: 13px; line-height: 1.7; color: #c4c6c9; padding: 13px 15px; border-left: 2px solid {{ selected.corrColor }}; background: rgba(255,255,255,0.015);">{{ selected.reasoning.logic }}</div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px;">
+          <span style="display: flex; gap: 2px;">
+            <span style="width: 4px; height: 14px; border-radius: 1px; background: {{ selected.corrColor }}; opacity: {{ selected.corrOp1 }};"></span>
+            <span style="width: 4px; height: 14px; border-radius: 1px; background: {{ selected.corrColor }}; opacity: {{ selected.corrOp2 }};"></span>
+            <span style="width: 4px; height: 14px; border-radius: 1px; background: {{ selected.corrColor }}; opacity: {{ selected.corrOp3 }};"></span>
+          </span>
+          <span style="font-size: 12px; color: {{ selected.corrColor }};">{{ selected.corrLabel }}</span>
+          <span style="font-size: 12px; color: #56585c;">· {{ selected.corrSub }}</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 11px; letter-spacing: 2px; color: #56585c; margin-bottom: 16px;">VALIDATION RESULTS · 5 DETERMINISTIC CHECKS</div>
+        <div style="display: flex; flex-direction: column; gap: 1px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; overflow: hidden;">
+          <sc-for list="{{ selected.validations }}" as="v" hint-placeholder-count="5">
+            <div style="background: #0a0c0f; padding: 13px 15px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <span style="font-size: 13px; color: #e9e9e7;">{{ v.name }}</span>
+                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: {{ v.color }}; font-weight: 500;"><span style="width: 14px; text-align: center;">{{ v.glyph }}</span>{{ v.verdict }}</span>
+              </div>
+              <div style="font-size: 12px; color: #7d8085; margin-top: 6px; line-height: 1.55;">{{ v.detail }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- right: promotion + meta -->
+    <div style="display: flex; flex-direction: column; gap: 28px;">
+      <div>
+        <div style="font-size: 11px; letter-spacing: 2px; color: #56585c; margin-bottom: 16px;">PROMOTION HISTORY · AUDIT TRAIL</div>
+        <div style="display: flex; flex-direction: column; gap: 0; border-left: 1px solid rgba(255,255,255,0.12); padding-left: 18px;">
+          <sc-for list="{{ selected.promotion }}" as="p" hint-placeholder-count="2">
+            <div style="position: relative; padding-bottom: 18px;">
+              <span style="position: absolute; left: -23px; top: 3px; width: 9px; height: 9px; border-radius: 50%; background: {{ p.toColor }}; border: 2px solid #08090b;"></span>
+              <div style="font-size: 12.5px; color: #e9e9e7;">{{ p.from }} → <span style="color: {{ p.toColor }};">{{ p.to }}</span></div>
+              <div style="font-size: 12px; color: #8c8f94; margin-top: 4px; line-height: 1.5;">{{ p.reason }}</div>
+              <div style="font-size: 11px; color: #56585c; margin-top: 5px;">{{ p.trigger }}</div>
+              <div style="font-size: 11px; color: #4a4d52; margin-top: 2px;">{{ p.time }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div>
+          <div style="font-size: 11px; letter-spacing: 1.5px; color: #56585c; margin-bottom: 9px;">MITRE ATT&amp;CK</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+            <sc-for list="{{ selected.mitreList }}" as="t" hint-placeholder-count="2">
+              <span style="font-size: 12px; color: #6a8cba; padding: 3px 9px; border: 1px solid rgba(106,140,186,0.3); border-radius: 6px;">{{ t.id }}</span>
+            </sc-for>
+            <span style="font-size: 12px; color: #56585c;">{{ selected.mitreFallback }}</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 11px; letter-spacing: 1.5px; color: #56585c; margin-bottom: 9px;">LINKED FINDINGS</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+            <sc-for list="{{ selected.linkedList }}" as="l" hint-placeholder-count="2">
+              <span onClick="{{ l.onClick }}" style="font-size: 12px; color: #df9a4d; padding: 3px 9px; border: 1px solid rgba(223,154,77,0.3); border-radius: 6px; cursor: pointer;">{{ l.id }}</span>
+            </sc-for>
+            <span style="font-size: 12px; color: #56585c;">{{ selected.linkedFallback }}</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 11px; letter-spacing: 1.5px; color: #56585c; margin-bottom: 9px;">CONTRADICTIONS</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+            <sc-for list="{{ selected.contraList }}" as="c" hint-placeholder-count="1">
+              <span style="font-size: 12px; color: #d9a04b; padding: 3px 9px; border: 1px solid rgba(217,160,75,0.3); border-radius: 6px;">{{ c.id }}</span>
+            </sc-for>
+            <span style="font-size: 12px; color: #56585c;">{{ selected.contraFallback }}</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 11px; letter-spacing: 1.5px; color: #56585c; margin-bottom: 9px;">FLAGS</div>
+          <div style="display: flex; flex-direction: column; gap: 7px;">
+            <sc-for list="{{ selected.flagsList }}" as="fl" hint-placeholder-count="1">
+              <div style="font-size: 11.5px; color: #9a9da1; line-height: 1.5; padding: 7px 10px; background: rgba(217,160,75,0.05); border: 1px solid rgba(217,160,75,0.15); border-radius: 6px;">{{ fl.text }}</div>
+            </sc-for>
+            <span style="font-size: 12px; color: #56585c;">{{ selected.flagsFallback }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div style="display: {{ dValidators }};">
+<div style="animation: viewIn .35s ease both; max-width: 1080px;">
+
+  <p style="font-size: 14px; line-height: 1.7; color: #9a9da1; margin: 0 0 28px; max-width: 760px;">Five deterministic validators run against every finding. <span style="color: #6a6d72;">No AI sits in this loop — each is plain code that can only return PASS, FAIL, or NOT_APPLICABLE. A single hard fail eliminates a finding.</span></p>
+
+  <!-- totals -->
+  <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; overflow: hidden; margin-bottom: 36px;">
+    <sc-for list="{{ valTotalCards }}" as="c" hint-placeholder-count="5">
+      <div style="background: #0a0c0f; padding: 20px;">
+        <div style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 32px; line-height: 1; color: {{ c.color }};">{{ c.value }}</div>
+        <div style="font-size: 12px; color: #8c8f94; margin-top: 9px;">{{ c.label }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- per-validator -->
+  <div style="font-size: 11px; letter-spacing: 2px; color: #56585c; margin-bottom: 16px;">THE FIVE VALIDATORS</div>
+  <div style="display: flex; flex-direction: column; gap: 1px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; overflow: hidden; margin-bottom: 40px;">
+    <sc-for list="{{ validatorRows }}" as="v" hint-placeholder-count="5">
+      <div style="background: #0a0c0f; padding: 18px 20px; display: grid; grid-template-columns: 30px 1fr auto; gap: 18px; align-items: center;">
+        <span style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 15px; color: #3c3f45;">{{ v.idx }}</span>
+        <div>
+          <div style="display: flex; align-items: center; gap: 9px;">
+            <span style="font-size: 14px; color: #e9e9e7;">{{ v.name }}</span>
+            <span style="font-size: 10px; letter-spacing: 1px; color: #df9a4d; border: 1px solid rgba(223,154,77,0.3); border-radius: 4px; padding: 1px 6px;">{{ v.tag }}</span>
+          </div>
+          <div style="font-size: 12px; color: #7d8085; margin-top: 5px; line-height: 1.55; max-width: 560px;">{{ v.desc }}</div>
+        </div>
+        <div style="display: flex; gap: 16px; text-align: right;">
+          <div><div style="font-size: 17px; color: #5fbf90;">{{ v.pass }}</div><div style="font-size: 10px; color: #56585c; margin-top: 2px;">pass</div></div>
+          <div><div style="font-size: 17px; color: #d76a5f;">{{ v.failHard }}</div><div style="font-size: 10px; color: #56585c; margin-top: 2px;">hard</div></div>
+          <div><div style="font-size: 17px; color: #d9a04b;">{{ v.failSoft }}</div><div style="font-size: 10px; color: #56585c; margin-top: 2px;">soft</div></div>
+          <div><div style="font-size: 17px; color: #6a6c70;">{{ v.na }}</div><div style="font-size: 10px; color: #56585c; margin-top: 2px;">n/a</div></div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- rejections -->
+  <div style="font-size: 11px; letter-spacing: 2px; color: #56585c; margin-bottom: 16px;">FLAGS &amp; REJECTIONS · {{ rejectionCount }}</div>
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <sc-for list="{{ rejections }}" as="r" hint-placeholder-count="3">
+      <div onClick="{{ r.onClick }}" style="border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px 18px; cursor: pointer; transition: border-color .15s ease;" style-hover="border: 1px solid rgba(223,154,77,0.35); border-radius: 10px; padding: 14px 18px; cursor: pointer;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 13px; color: #df9a4d; font-weight: 600;">{{ r.finding }}</span>
+          <span style="font-size: 12px; color: #8c8f94;">{{ r.validator }}</span>
+          <span style="margin-left: auto; font-size: 11.5px; color: {{ r.color }}; font-weight: 500;">{{ r.verdict }}</span>
+        </div>
+        <div style="font-size: 12.5px; color: #7d8085; margin-top: 7px; line-height: 1.55;">{{ r.detail }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</div>
+
+<div style="display: {{ dEvidence }};">
+<div style="animation: viewIn .35s ease both; max-width: 1080px;">
+
+  <p style="font-size: 14px; line-height: 1.7; color: #9a9da1; margin: 0 0 28px; max-width: 760px;">Every evidence source is mounted read-only and fingerprinted with SHA-256 at acquisition. <span style="color: #6a6d72;">Findings cite a source by id, so any claim can be traced back to a hash-verified artifact.</span></p>
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <sc-for list="{{ sources }}" as="s" hint-placeholder-count="6">
+      <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 11px; padding: 18px 20px; background: #0a0c0f;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <span style="font-size: 14px; font-weight: 600; color: #df9a4d;">{{ s.id }}</span>
+          <span style="font-size: 11.5px; color: #8c8f94; padding: 3px 9px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">{{ s.type }}</span>
+          <span style="margin-left: auto; font-size: 11.5px; color: #5fbf90;">● sha-256 verified</span>
+        </div>
+        <div style="font-size: 13px; color: #c4c6c9; margin-top: 13px; word-break: break-all;">{{ s.path }}</div>
+        <div style="display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin-top: 14px; font-size: 11.5px;">
+          <span style="color: #56585c; letter-spacing: 1px;">SHA-256</span><span style="color: #a9c2a9; word-break: break-all;">{{ s.sha }}</span>
+          <span style="color: #56585c; letter-spacing: 1px;">MOUNTED</span><span style="color: #8c8f94;">{{ s.mounted }}</span>
+          <span style="color: #56585c; letter-spacing: 1px;">METADATA</span><span style="color: #8c8f94;">{{ s.meta }}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</div>
+
+<div style="display: {{ dContradictions }};">
+<div style="animation: viewIn .35s ease both; max-width: 1000px;">
+
+  <div style="display: flex; gap: 28px; margin-bottom: 28px;">
+    <div style="display: flex; align-items: baseline; gap: 9px;"><span style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 26px; color: #d9a04b;">{{ contraOpen }}</span><span style="font-size: 13px; color: #8c8f94;">open</span></div>
+    <div style="display: flex; align-items: baseline; gap: 9px;"><span style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 26px; color: #5fbf90;">{{ contraResolved }}</span><span style="font-size: 13px; color: #8c8f94;">resolved</span></div>
+    <p style="font-size: 13px; line-height: 1.6; color: #6a6d72; margin: 0; align-self: center; max-width: 520px;">When two findings disagree, Sentinel records the conflict rather than silently picking one — and spawns follow-up tasks to resolve it.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <sc-for list="{{ contradictions }}" as="c" hint-placeholder-count="4">
+      <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; background: #0a0c0f;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.07);">
+          <span style="font-size: 13px; font-weight: 600; color: #e9e9e7;">{{ c.id }}</span>
+          <span onClick="{{ c.onA }}" style="font-size: 12px; color: #df9a4d; cursor: pointer;">{{ c.a }}</span>
+          <span style="font-size: 12px; color: #56585c;">{{ c.vs }}</span>
+          <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: {{ c.statusColor }};"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ c.statusColor }};"></span>{{ c.status }}</span>
+        </div>
+        <div style="padding: 16px 18px;">
+          <div style="font-size: 10.5px; letter-spacing: 1px; color: #56585c; margin-bottom: 6px;">THE CONFLICT</div>
+          <div style="font-size: 13px; line-height: 1.65; color: #b6b8bb;">{{ c.desc }}</div>
+          <div style="font-size: 10.5px; letter-spacing: 1px; color: #56585c; margin: 16px 0 6px;">RESOLUTION</div>
+          <div style="font-size: 13px; line-height: 1.65; color: {{ c.resColor }}; padding-left: 12px; border-left: 2px solid {{ c.statusColor }};">{{ c.resD }}</div>
+          <div style="font-size: 11.5px; color: #56585c; margin-top: 14px;">{{ c.taskD }}</div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</div>
+
+<div style="display: {{ dQueue }};">
+<div style="animation: viewIn .35s ease both; max-width: 1000px;">
+
+  <div style="display: flex; align-items: center; gap: 22px; margin-bottom: 24px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 18px;">
+      <sc-for list="{{ queueStats }}" as="q" hint-placeholder-count="3">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><span style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 22px; color: {{ q.color }};">{{ q.count }}</span><span style="font-size: 12.5px; color: #8c8f94;">{{ q.label }}</span></div>
+      </sc-for>
+    </div>
+    <div style="display: flex; gap: 7px; margin-left: auto;">
+      <sc-for list="{{ qpFilters }}" as="f" hint-placeholder-count="4">
+        <span onClick="{{ f.onClick }}" style="font-size: 12px; padding: 4px 11px; border-radius: 6px; cursor: pointer; border: 1px solid {{ f.border }}; background: {{ f.bg }}; color: {{ f.color }}; transition: all .15s ease;">{{ f.label }}</span>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 1px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; overflow: hidden;">
+    <sc-for list="{{ queue }}" as="t" hint-placeholder-count="6">
+      <div style="background: #0a0c0f; padding: 16px 20px; display: grid; grid-template-columns: 64px 1fr 100px; gap: 18px; align-items: start;">
+        <span style="font-size: 13px; color: #df9a4d; font-weight: 600;">{{ t.id }}</span>
+        <div>
+          <div style="font-size: 13px; line-height: 1.6; color: #c4c6c9;">{{ t.desc }}</div>
+          <div style="display: flex; gap: 14px; margin-top: 8px; font-size: 11px; color: #56585c;">
+            <span>triggered by {{ t.trigger }}</span>
+            <span style="color: #6a8cba;">{{ t.resultD }}</span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: {{ t.prColor }}; border: 1px solid currentColor; border-radius: 5px; padding: 2px 8px;">{{ t.priority }}</div>
+          <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: {{ t.stColor }}; margin-top: 8px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ t.stColor }};"></span>{{ t.stLabel }}</div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</div>
+
+<div style="display: {{ dReport }};">
+<div style="animation: viewIn .35s ease both;">
+
+  <div class="no-print" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;">
+    <p style="font-size: 13px; color: #6a6d72; margin: 0; max-width: 560px; line-height: 1.6;">A counsel-ready forensic report. Switches to a light, paper-like document and prints clean.</p>
+    <span onClick="{{ printReport }}" style="display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: #08090b; background: #df9a4d; padding: 9px 16px; border-radius: 7px; cursor: pointer; font-weight: 600; white-space: nowrap;" style-hover="display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: #08090b; background: #ecae64; padding: 9px 16px; border-radius: 7px; cursor: pointer; font-weight: 600;">↓ print / save pdf</span>
+  </div>
+
+  <div id="report-paper" style="background: #f6f5f1; color: #1a1c1e; border-radius: 12px; padding: 56px 60px; max-width: 880px; box-shadow: 0 30px 90px -50px rgba(0,0,0,0.9); font-size: 13.5px; line-height: 1.65;">
+
+    <!-- letterhead -->
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 2px solid #1a1c1e; padding-bottom: 22px; margin-bottom: 30px;">
+      <div>
+        <div style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.5px; color: #14110c;">Forensic Analysis Report</div>
+        <div style="font-size: 13px; color: #6a6357; margin-top: 6px;">Case {{ report.caseId }} · prepared by sift sentinel agent v{{ report.agentVersion }}</div>
+      </div>
+      <div style="text-align: right; font-size: 11.5px; color: #6a6357; line-height: 1.7;">
+        <div style="display: inline-block; border: 1.5px solid #b8732a; color: #b8732a; font-weight: 600; letter-spacing: 1px; padding: 3px 9px; border-radius: 4px; font-size: 10.5px;">GROUNDED · VERIFIED</div>
+        <div style="margin-top: 8px;">{{ report.start }}</div>
+        <div>→ {{ report.end }}</div>
+      </div>
+    </div>
+
+    <!-- summary statement -->
+    <div style="font-size: 11px; letter-spacing: 2px; color: #9a9184; margin-bottom: 12px;">EXECUTIVE SUMMARY</div>
+    <p style="margin: 0 0 18px; color: #2a2c2e;">This report documents the findings of an automated forensic analysis of case {{ report.caseId }}. The investigation mounted {{ report.nSources }} hash-verified evidence sources and evaluated each finding against five deterministic validators. In keeping with a precision-over-recall mandate, every finding below is anchored to a specific, human-verifiable artifact. <strong>{{ report.nElim }} finding was disproved and eliminated by automated validation</strong> and is retained in this record for transparency.</p>
+
+    <!-- tallies -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #d9d6cd; border: 1px solid #d9d6cd; border-radius: 8px; overflow: hidden; margin: 24px 0 32px;">
+      <div style="background: #f6f5f1; padding: 14px 16px;"><div style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 24px; color: #2f7d57;">{{ report.nConfirmed }}</div><div style="font-size: 11px; color: #6a6357; margin-top: 3px;">confirmed</div></div>
+      <div style="background: #f6f5f1; padding: 14px 16px;"><div style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 24px; color: #2d5d96;">{{ report.nInferred }}</div><div style="font-size: 11px; color: #6a6357; margin-top: 3px;">inferred</div></div>
+      <div style="background: #f6f5f1; padding: 14px 16px;"><div style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 24px; color: #6a6357;">{{ report.nHypo }}</div><div style="font-size: 11px; color: #6a6357; margin-top: 3px;">hypotheses</div></div>
+      <div style="background: #f6f5f1; padding: 14px 16px;"><div style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 24px; color: #b03f34;">{{ report.nElim }}</div><div style="font-size: 11px; color: #6a6357; margin-top: 3px;">eliminated</div></div>
+    </div>
+
+    <!-- inferred + confirmed findings -->
+    <div style="font-size: 11px; letter-spacing: 2px; color: #9a9184; margin-bottom: 14px;">SUPPORTED FINDINGS</div>
+    <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 30px;">
+      <sc-for list="{{ report.supported }}" as="f" hint-placeholder-count="2">
+        <div style="border-left: 3px solid {{ f.inkColor }}; padding-left: 16px;">
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <span style="font-weight: 700; color: #14110c;">{{ f.id }}</span>
+            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: {{ f.inkColor }};">{{ f.statusLabel }}</span>
+            <span style="font-size: 11.5px; color: #9a9184;">{{ f.categoryLabel }} · {{ f.mitreStr }}</span>
+          </div>
+          <p style="margin: 7px 0 0; color: #2a2c2e;">{{ f.summary }}</p>
+          <div style="font-size: 11.5px; color: #6a6357; margin-top: 7px;">anchor: {{ f.anchorLine }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- open hypotheses -->
+    <div style="font-size: 11px; letter-spacing: 2px; color: #9a9184; margin-bottom: 14px;">OPEN HYPOTHESES · PENDING VERIFICATION</div>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px;">
+      <sc-for list="{{ report.hypotheses }}" as="f" hint-placeholder-count="4">
+        <div style="display: flex; gap: 12px; align-items: baseline;">
+          <span style="font-weight: 700; color: #14110c; flex-shrink: 0;">{{ f.id }}</span>
+          <span style="color: #3a3c3e;">{{ f.summaryShort }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- eliminated -->
+    <div style="font-size: 11px; letter-spacing: 2px; color: #9a9184; margin-bottom: 14px;">ELIMINATED · SELF-CORRECTION RECORD</div>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px;">
+      <sc-for list="{{ report.eliminated }}" as="f" hint-placeholder-count="1">
+        <div style="background: #efe6e3; border: 1px solid #e0cbc6; border-radius: 8px; padding: 14px 16px;">
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <span style="font-weight: 700; color: #b03f34; text-decoration: line-through;">{{ f.id }}</span>
+            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #b03f34;">eliminated</span>
+          </div>
+          <p style="margin: 7px 0 0; color: #6a4d49; text-decoration: line-through;">{{ f.summary }}</p>
+          <div style="font-size: 11.5px; color: #8a5d57; margin-top: 7px; text-decoration: none;">Caught by Tool Output Fidelity: claimed artifact appears nowhere in the parsed tool output. Retained, struck through, as a transparency record.</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- evidence register -->
+    <div style="font-size: 11px; letter-spacing: 2px; color: #9a9184; margin-bottom: 14px;">EVIDENCE REGISTER</div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 30px;">
+      <thead><tr style="text-align: left; color: #9a9184; border-bottom: 1px solid #d9d6cd;">
+        <th style="padding: 7px 8px 7px 0; font-weight: 500;">SOURCE</th><th style="padding: 7px 8px; font-weight: 500;">TYPE</th><th style="padding: 7px 8px; font-weight: 500;">SHA-256</th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{ report.sources }}" as="s" hint-placeholder-count="6">
+          <tr style="border-bottom: 1px solid #e6e3da; color: #3a3c3e;">
+            <td style="padding: 8px 8px 8px 0; font-weight: 600;">{{ s.id }}</td>
+            <td style="padding: 8px;">{{ s.type }}</td>
+            <td style="padding: 8px; color: #6a6357; word-break: break-all;">{{ s.shaShort }}</td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+
+    <!-- validation statement -->
+    <div style="font-size: 11px; letter-spacing: 2px; color: #9a9184; margin-bottom: 12px;">VALIDATION METHODOLOGY</div>
+    <p style="margin: 0 0 10px; color: #2a2c2e;">Each finding was independently checked by five deterministic validators. Across the case, {{ report.valTotals.runs }} validator runs were executed: {{ report.valTotals.pass }} pass, {{ report.valTotals.failHard }} hard fail, {{ report.valTotals.failSoft }} soft flag, {{ report.valTotals.na }} not applicable. A single hard failure eliminates a finding; no AI participates in the validation decision.</p>
+
+    <div style="border-top: 1px solid #d9d6cd; margin-top: 30px; padding-top: 16px; font-size: 11px; color: #9a9184; display: flex; justify-content: space-between;">
+      <span>sift sentinel · grounded forensic reasoning · {{ report.caseId }}</span>
+      <span>{{ report.toolExec }} tool executions · trust through traceability</span>
+    </div>
+
+  </div>
+</div>
+</div>
+
+      <!--VIEWS-->
+    </div>
+  </div>
+
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:840}}">
+class Component extends DCLogic {
+  state = { view: 'landing', selectedId: null, heroStep: 0, loaded: false,
+            fStatus: 'all', fCategory: 'all', fVerdict: 'all', fContra: 'all', sort: 'id', qPriority: 'all' };
+
+  componentDidMount() {
+    this._tryLoad();
+    this._loadTimer = setInterval(() => { if (!this.state.loaded) this._tryLoad(); else clearInterval(this._loadTimer); }, 60);
+    this._heroTimer = setInterval(() => {
+      if (this.state.view !== 'landing') return; // no re-renders off the landing page
+      this.setState(s => { let n = s.heroStep + 1; if (n > 16) n = 0; return { heroStep: n }; });
+    }, 620);
+  }
+  componentWillUnmount() { clearInterval(this._heroTimer); clearInterval(this._loadTimer); }
+  _tryLoad() { if (typeof window !== 'undefined' && window.SIFT_GRAPH) { this.data = window.SIFT_GRAPH; this.setState({ loaded: true }); } }
+
+  // ---- color + meta maps ----
+  get C() { return { hi:'#e9e9e7', mid:'#8c8f94', lo:'#56585c', faint:'#3c3f45', accent:'#df9a4d',
+    green:'#5fbf90', blue:'#6aa3e0', red:'#d76a5f', amber:'#d9a04b', grey:'#9fa1a6' }; }
+  statusMeta(s) {
+    const m = {
+      HYPOTHESIS:{ label:'Hypothesis', color:'#9fa1a6', bg:'rgba(159,161,166,0.10)', border:'rgba(159,161,166,0.30)' },
+      INFERRED:{ label:'Inferred', color:'#6aa3e0', bg:'rgba(106,163,224,0.12)', border:'rgba(106,163,224,0.34)' },
+      CONFIRMED:{ label:'Confirmed', color:'#5fbf90', bg:'rgba(95,191,144,0.12)', border:'rgba(95,191,144,0.34)' },
+      ELIMINATED:{ label:'Eliminated', color:'#d76a5f', bg:'rgba(215,106,95,0.12)', border:'rgba(215,106,95,0.34)' }
+    };
+    return m[s] || m.HYPOTHESIS;
+  }
+  verdictMeta(v) {
+    const m = {
+      PASS:{ label:'PASS', color:'#5fbf90', glyph:'✓' },
+      FAIL_HARD:{ label:'FAIL · HARD', color:'#d76a5f', glyph:'✕' },
+      FAIL_SOFT:{ label:'FAIL · SOFT', color:'#d9a04b', glyph:'!' },
+      NOT_APPLICABLE:{ label:'N/A', color:'#6a6c70', glyph:'–' }
+    };
+    return m[v] || m.NOT_APPLICABLE;
+  }
+  corrMeta(t) {
+    const m = {
+      independent_sources:{ level:3, label:'Strong', sub:'independent sources', color:'#5fbf90' },
+      single_source_corroborated:{ level:2, label:'Moderate', sub:'single source · corroborated', color:'#d9a04b' },
+      single_source_narrated:{ level:1, label:'Weak', sub:'single source · narrated', color:'#d76a5f' },
+      not_applicable:{ level:0, label:'—', sub:'not applicable', color:'#6a6c70' }
+    };
+    return m[t] || m.not_applicable;
+  }
+  pretty(s) { return (s||'').replace(/_/g,' '); }
+
+  // ---- formatters ----
+  _mo(i){ return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i]; }
+  fmtDT(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return iso;
+    const p=n=>String(n).padStart(2,'0');
+    return `${this._mo(d.getUTCMonth())} ${p(d.getUTCDate())} · ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}Z`; }
+  shortDT(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return iso;
+    const p=n=>String(n).padStart(2,'0'); return `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}Z`; }
+  durStr(a,b){ const d=(new Date(b)-new Date(a))/1000; if(isNaN(d)) return '—';
+    const m=Math.floor(d/60), s=Math.round(d%60); return `${m}m ${s}s`; }
+
+  // ---- finding view-model ----
+  fVM(f){
+    const sm=this.statusMeta(f.status);
+    const vr=f.validation_results||[];
+    const counts={pass:0,failHard:0,failSoft:0,na:0};
+    vr.forEach(v=>{ if(v.verdict==='PASS')counts.pass++; else if(v.verdict==='FAIL_HARD')counts.failHard++;
+      else if(v.verdict==='FAIL_SOFT')counts.failSoft++; else counts.na++; });
+    const corr=this.corrMeta(f.reasoning_chain&&f.reasoning_chain.corroboration_type);
+    const a=f.evidence_anchor||{};
+    const worst = counts.failHard? this.verdictMeta('FAIL_HARD') : counts.failSoft? this.verdictMeta('FAIL_SOFT') : this.verdictMeta('PASS');
+    return {
+      id:f.finding_id, status:f.status, statusLabel:sm.label, statusColor:sm.color, statusBg:sm.bg, statusBorder:sm.border,
+      eliminated: f.status==='ELIMINATED',
+      category:f.category, categoryLabel:this.pretty(f.category),
+      summary:f.summary,
+      summaryColor: f.status==='ELIMINATED'?'#74605d':'#9a9da1',
+      summaryDeco: f.status==='ELIMINATED'?'line-through':'none',
+      mitreStr:(f.mitre_attack||[]).join('   '),
+      contraTag:(f.contradictions||[]).length?('contradiction · '+(f.contradictions||[]).join(' ')):'',
+      flagTag:(f.flags||[]).length?((f.flags||[]).length+' flag'+((f.flags||[]).length>1?'s':'')):'',
+      checksTotal:(f.validation_results||[]).length,
+      validColor: counts.failHard?'#d76a5f':counts.failSoft?'#d9a04b':'#5fbf90',
+      validText: counts.failHard?(counts.failHard+' hard fail'):counts.failSoft?(counts.failSoft+' soft flag'):'all checks pass',
+      mitre:f.mitre_attack||[], hasMitre:(f.mitre_attack||[]).length>0,
+      corrLevel:corr.level, corrLabel:corr.label, corrSub:corr.sub, corrColor:corr.color, hasCorr:corr.level>0,
+      corrColor:corr.color,
+      corrOp1: corr.level>=1?1:0.16, corrOp2: corr.level>=2?1:0.16, corrOp3: corr.level>=3?1:0.16,
+      counts, worstColor:worst.color, worstLabel:worst.label,
+      hasContra:(f.contradictions||[]).length>0, contras:f.contradictions||[],
+      flags:f.flags||[], hasFlags:(f.flags||[]).length>0,
+      flagsList:(f.flags||[]).map(x=>({ text:x })),
+      linked:f.linked_findings||[], hasLinked:(f.linked_findings||[]).length>0,
+      linkedList:(f.linked_findings||[]).map(id=>({ id, onClick:()=>this.setState({ view:'detail', selectedId:id }) })),
+      mitreList:(f.mitre_attack||[]).map(t=>({ id:t })),
+      contraList:(f.contradictions||[]).map(id=>({ id })),
+      mitreFallback:(f.mitre_attack||[]).length?'':'none',
+      linkedFallback:(f.linked_findings||[]).length?'':'none',
+      contraFallback:(f.contradictions||[]).length?'':'none — no conflicts detected',
+      flagsFallback:(f.flags||[]).length?'':'none — no caveats raised',
+      reasonNote:(f.reasoning_chain&&f.reasoning_chain.chain_rendered)?'':'No reasoning chain — this finding is a direct artifact observation, pending verification.',
+      anchor:{
+        sourceId:a.source_id, toolExec:a.tool_execution_id,
+        artifactPath:a.artifact_path, hasPath:!!a.artifact_path, artifactPathD:a.artifact_path||'—',
+        fileHash:a.file_hash, hasHash:!!a.file_hash, fileHashD:a.file_hash||'—',
+        offset:a.offset, hasOffset:a.offset!=null, offsetD:(a.offset!=null?String(a.offset):'—'),
+        logEntry:a.log_entry, hasLog:!!a.log_entry, logEntryD:a.log_entry||'(no log excerpt for this finding)',
+        rawRef:a.raw_output_reference, hasRaw:!!a.raw_output_reference, rawRefD:a.raw_output_reference||'—'
+      },
+      reasoning:{ rendered:!!(f.reasoning_chain&&f.reasoning_chain.chain_rendered),
+        premises:(f.reasoning_chain&&f.reasoning_chain.premises)||[],
+        premisesList:(((f.reasoning_chain&&f.reasoning_chain.premises)||[]).map((p,i)=>({ text:p, n:String(i+1).padStart(2,'0') }))),
+        hasPremises:(((f.reasoning_chain&&f.reasoning_chain.premises)||[]).length>0),
+        logic:(f.reasoning_chain&&f.reasoning_chain.logic)||'',
+        corrLabel:corr.label, corrSub:corr.sub, corrColor:corr.color, corrLevel:corr.level,
+        corrBars:[1,2,3].map(i=>({ op:(i<=corr.level?1:0.16), color:corr.color })) },
+      validations: vr.map(v=>{ const vm=this.verdictMeta(v.verdict);
+        return { name:this.pretty(v.validator_name), raw:v.validator_name, verdict:vm.label, color:vm.color, glyph:vm.glyph, detail:v.detail, time:this.shortDT(v.timestamp) }; }),
+      promotion: (f.promotion_history||[]).map(p=>{ const to=this.statusMeta(p.to_status);
+        return { from:p.from_status?this.statusMeta(p.from_status).label:'created', to:to.label, toColor:to.color,
+          reason:p.reason, trigger:p.triggered_by, time:this.fmtDT(p.timestamp),
+          isElim:p.to_status==='ELIMINATED', isPromote:p.to_status==='INFERRED'||p.to_status==='CONFIRMED' }; })
+    };
+  }
+
+  renderVals() {
+    const C=this.C;
+    const view=this.state.view;
+    const isLanding = view==='landing';
+    const base = {
+      isLanding, isConsole: !isLanding,
+      isDashboard: view==='dashboard', isFindings: view==='findings', isDetail: view==='detail',
+      isValidators: view==='validators', isEvidence: view==='evidence', isContradictions: view==='contradictions',
+      isQueue: view==='queue', isReport: view==='report',
+      dLanding: isLanding?'block':'none', dConsole: isLanding?'none':'block',
+      dDashboard: view==='dashboard'?'block':'none', dFindings: view==='findings'?'block':'none',
+      dDetail: view==='detail'?'block':'none', dValidators: view==='validators'?'block':'none',
+      dEvidence: view==='evidence'?'block':'none', dContradictions: view==='contradictions'?'block':'none',
+      dQueue: view==='queue'?'block':'none', dReport: view==='report'?'block':'none',
+      enterConsole: () => this.setState({ view:'dashboard' }),
+      goLanding: () => this.setState({ view:'landing' }),
+    };
+
+    // hero
+    const HERO = [
+      { label:'$', labelColor:C.lo, text:'sift analyze ./cases/mini-case', textColor:C.hi, tail:'', tc:C.lo },
+      { label:'mount', labelColor:C.lo, text:'src-001 SYSTEM hive', textColor:C.mid, tail:'sha-256 verified', tc:C.green },
+      { label:'mount', labelColor:C.lo, text:'src-006 Prefetch', textColor:C.mid, tail:'sha-256 verified', tc:C.green },
+      { label:'finding', labelColor:C.lo, text:'F-010 · mimikatz.exe credential dump', textColor:C.mid, tail:'HYPOTHESIS', tc:C.grey },
+      { label:'validate', labelColor:C.lo, text:'platform_consistency', textColor:C.mid, tail:'PASS', tc:C.green },
+      { label:'validate', labelColor:C.lo, text:'temporal_physics', textColor:C.mid, tail:'PASS', tc:C.green },
+      { label:'validate', labelColor:C.lo, text:'path_existence', textColor:C.mid, tail:'FAIL · SOFT', tc:C.amber },
+      { label:'validate', labelColor:C.lo, text:'hash_verification', textColor:C.mid, tail:'N/A', tc:C.lo },
+      { label:'validate', labelColor:C.lo, text:'tool_output_fidelity', textColor:C.mid, tail:'FAIL · HARD', tc:C.red },
+      { label:'→', labelColor:C.red, text:'F-010 ELIMINATED · fabrication caught, shown not hidden', textColor:C.red, tail:'SELF-CORRECTED', tc:C.red }
+    ];
+    const vis=Math.min(this.state.heroStep, HERO.length);
+    base.heroLines = HERO.slice(0, vis);
+    base.heroTyping = this.state.heroStep < HERO.length;
+
+    if (!this.data) {
+      base.caseMeta = { caseId:'TEST-001', findingCount:'—', sourceCount:'—', agentVersion:'0.1.0', toolExec:'—', startShort:'—', endShort:'—', duration:'—' };
+      base.navItems = []; base.viewTitle=''; base.viewCrumb=''; return base;
+    }
+
+    const g=this.data;
+    const findings=g.findings||[];
+    const vms=findings.map(f=>this.fVM(f));
+    const byStatus=s=>findings.filter(f=>f.status===s).length;
+    const contraOpen=(g.contradictions||[]).filter(c=>c.status==='OPEN').length;
+    const contraResolved=(g.contradictions||[]).filter(c=>c.status==='RESOLVED').length;
+    const selfCorr=findings.reduce((n,f)=>n+(f.promotion_history||[]).filter(p=>p.from_status).length,0);
+
+    base.caseMeta={ caseId:g.case_id, findingCount:findings.length, sourceCount:(g.evidence_sources||[]).length,
+      agentVersion:g.metadata.agent_version, toolExec:g.metadata.total_tool_executions,
+      startShort:this.shortDT(g.metadata.analysis_start), endShort:this.shortDT(g.metadata.analysis_end),
+      duration:this.durStr(g.metadata.analysis_start, g.metadata.analysis_end) };
+
+    // nav
+    const titles={ dashboard:['Overview','Case overview'], findings:['Findings','Findings explorer'],
+      detail:['Findings','Finding detail'], validators:['Validators','Validator activity'],
+      evidence:['Evidence','Evidence inventory'], contradictions:['Contradictions','Contradictions & resolutions'],
+      queue:['Queue','Investigation queue'], report:['Report','Forensic report'] };
+    base.viewCrumb=(titles[view]||['',''])[0].toLowerCase();
+    base.viewTitle=(titles[view]||['',''])[1];
+
+    const navDef=[
+      { key:'dashboard', label:'Overview' },
+      { key:'findings', label:'Findings', count:findings.length },
+      { key:'validators', label:'Validators', count:findings.length*5 },
+      { key:'evidence', label:'Evidence', count:(g.evidence_sources||[]).length },
+      { key:'contradictions', label:'Contradictions', count:(g.contradictions||[]).length },
+      { key:'queue', label:'Queue', count:(g.investigation_queue||[]).length },
+      { key:'report', label:'Report' }
+    ];
+    const activeKey = view==='detail'?'findings':view;
+    base.navItems=navDef.map(n=>{ const on=n.key===activeKey;
+      return { label:n.label, onClick:()=>this.setState({ view:n.key, selectedId:null }),
+        color:on?'#f1f1ef':'#8c8f94', bg:on?'rgba(223,154,77,0.08)':'transparent',
+        edge:on?'#df9a4d':'transparent', hasCount:n.count!=null, count:n.count, countColor:on?'#df9a4d':'#56585c' }; });
+
+    // dashboard metrics
+    base.metrics=[
+      { label:'Confirmed', value:byStatus('CONFIRMED'), sub:'verified · 2+ artifacts', color:'#5fbf90', accent:byStatus('CONFIRMED')>0 },
+      { label:'Inferred', value:byStatus('INFERRED'), sub:'corroborated chain', color:'#6aa3e0', accent:true },
+      { label:'Open hypotheses', value:byStatus('HYPOTHESIS'), sub:'pending verification', color:'#9fa1a6', accent:false },
+      { label:'Eliminated', value:byStatus('ELIMINATED'), sub:'disproved · shown', color:'#d76a5f', accent:true },
+      { label:'Evidence sources', value:(g.evidence_sources||[]).length, sub:'sha-256 verified', color:'#e9e9e7', accent:false },
+      { label:'Contradictions', value:`${contraOpen}/${contraResolved}`, sub:'open / resolved', color:'#e9e9e7', accent:false },
+      { label:'Tool executions', value:g.metadata.total_tool_executions, sub:'traceable', color:'#e9e9e7', accent:false },
+      { label:'Self-corrections', value:selfCorr, sub:'status changes', color:'#df9a4d', accent:true }
+    ];
+    const total=findings.length;
+    base.statusBars=['CONFIRMED','INFERRED','HYPOTHESIS','ELIMINATED'].map(s=>{ const m=this.statusMeta(s); const c=byStatus(s);
+      return { label:m.label, count:c, pct:total?Math.round(c/total*100):0, color:m.color }; });
+    const cats={}; findings.forEach(f=>{ cats[f.category]=(cats[f.category]||0)+1; });
+    base.catBars=Object.keys(cats).sort((a,b)=>cats[b]-cats[a]).map(k=>({ label:this.pretty(k), count:cats[k], pct:total?Math.round(cats[k]/total*100):0 }));
+
+    // findings explorer
+    base.fStatus=this.state.fStatus; base.fCategory=this.state.fCategory; base.fVerdict=this.state.fVerdict; base.fContra=this.state.fContra;
+    const mk=(key,val,label,cur)=>({ label, active:cur===val, onClick:()=>this.setState({ [key]:val }),
+      color:cur===val?'#08090b':'#8c8f94', bg:cur===val?'#df9a4d':'transparent', border:cur===val?'#df9a4d':'rgba(255,255,255,0.12)' });
+    base.statusFilters=[ mk('fStatus','all','all',this.state.fStatus), mk('fStatus','HYPOTHESIS','hypothesis',this.state.fStatus),
+      mk('fStatus','INFERRED','inferred',this.state.fStatus), mk('fStatus','CONFIRMED','confirmed',this.state.fStatus),
+      mk('fStatus','ELIMINATED','eliminated',this.state.fStatus) ];
+    const catKeys=['all'].concat(Object.keys(cats).sort());
+    base.categoryFilters=catKeys.map(k=>mk('fCategory',k,k==='all'?'all categories':this.pretty(k),this.state.fCategory));
+    base.verdictFilters=[ mk('fVerdict','all','any verdict',this.state.fVerdict), mk('fVerdict','FAIL_HARD','fail · hard',this.state.fVerdict),
+      mk('fVerdict','FAIL_SOFT','fail · soft',this.state.fVerdict), mk('fVerdict','PASS','all pass',this.state.fVerdict) ];
+    base.contraFilters=[ mk('fContra','all','all',this.state.fContra), mk('fContra','yes','has contradiction',this.state.fContra) ];
+
+    let filtered=vms.slice();
+    if(this.state.fStatus!=='all') filtered=filtered.filter(v=>v.status===this.state.fStatus);
+    if(this.state.fCategory!=='all') filtered=filtered.filter(v=>v.category===this.state.fCategory);
+    if(this.state.fVerdict==='FAIL_HARD') filtered=filtered.filter(v=>v.counts.failHard>0);
+    else if(this.state.fVerdict==='FAIL_SOFT') filtered=filtered.filter(v=>v.counts.failSoft>0);
+    else if(this.state.fVerdict==='PASS') filtered=filtered.filter(v=>v.counts.failHard===0&&v.counts.failSoft===0);
+    if(this.state.fContra==='yes') filtered=filtered.filter(v=>v.hasContra);
+    const ord={ELIMINATED:0,HYPOTHESIS:1,INFERRED:2,CONFIRMED:3};
+    filtered.forEach(v=>v.onClick=()=>this.setState({ view:'detail', selectedId:v.id }));
+    base.filteredFindings=filtered;
+    base.filteredCount=filtered.length; base.totalFindings=findings.length;
+
+    // detail (always compute so the hidden detail view has no unresolved holes)
+    const selRaw=findings.find(x=>x.finding_id===this.state.selectedId)||findings[0];
+    base.selected=this.fVM(selRaw);
+    base.hasReasoning=base.selected.reasoning.rendered;
+    base.hasFlagsSel=base.selected.hasFlags;
+    base.hasContraSel=base.selected.contras.length>0;
+    base.hasLinkedSel=base.selected.hasLinked;
+    base.backToFindings=()=>this.setState({ view:'findings' });
+
+    // validators aggregate
+    const VAL=['platform_consistency','temporal_physics','path_existence','hash_verification','tool_output_fidelity'];
+    const VDESC={ platform_consistency:'Windows artifact claimed on a Linux image (or vice-versa) → logically impossible.',
+      temporal_physics:'A timestamp after the evidence was captured → physically impossible.',
+      path_existence:'The claimed file or registry path does not exist (after 8.3 / device-path / case normalization).',
+      hash_verification:'The claimed file hash does not match the actual file → fabricated.',
+      tool_output_fidelity:'The agent claims a tool found X, but X appears nowhere in the raw tool output → fabricated.' };
+    let runs=0; const agg={PASS:0,FAIL_HARD:0,FAIL_SOFT:0,NOT_APPLICABLE:0};
+    const perVal={}; VAL.forEach(v=>perVal[v]={PASS:0,FAIL_HARD:0,FAIL_SOFT:0,NOT_APPLICABLE:0});
+    const rejections=[];
+    findings.forEach(f=>(f.validation_results||[]).forEach(v=>{ runs++; agg[v.verdict]=(agg[v.verdict]||0)+1;
+      if(perVal[v.validator_name]) perVal[v.validator_name][v.verdict]++;
+      if(v.verdict==='FAIL_HARD'||v.verdict==='FAIL_SOFT'){ const vm=this.verdictMeta(v.verdict);
+        rejections.push({ finding:f.finding_id, validator:this.pretty(v.validator_name), verdict:vm.label, color:vm.color, detail:v.detail,
+          onClick:()=>this.setState({ view:'detail', selectedId:f.finding_id }) }); } }));
+    base.valTotals={ runs, pass:agg.PASS, failHard:agg.FAIL_HARD, failSoft:agg.FAIL_SOFT, na:agg.NOT_APPLICABLE };
+    base.valTotalCards=[ { label:'Total runs', value:runs, color:'#e9e9e7' }, { label:'Pass', value:agg.PASS, color:'#5fbf90' },
+      { label:'Fail · hard', value:agg.FAIL_HARD, color:'#d76a5f' }, { label:'Fail · soft', value:agg.FAIL_SOFT, color:'#d9a04b' },
+      { label:'N/A', value:agg.NOT_APPLICABLE, color:'#6a6c70' } ];
+    base.validatorRows=VAL.map((v,i)=>({ idx:String(i+1).padStart(2,'0'), name:this.pretty(v), desc:VDESC[v],
+      pass:perVal[v].PASS, failHard:perVal[v].FAIL_HARD, failSoft:perVal[v].FAIL_SOFT, na:perVal[v].NOT_APPLICABLE,
+      tag:v==='tool_output_fidelity'?'anti-fabrication':'deterministic' }));
+    base.rejections=rejections; base.rejectionCount=rejections.length;
+
+    // evidence
+    base.sources=(g.evidence_sources||[]).map(s=>({ id:s.source_id, type:this.pretty(s.source_type), path:s.path,
+      sha:s.sha256, shaShort:s.sha256.slice(0,16)+'…'+s.sha256.slice(-8), mounted:this.fmtDT(s.mounted_at),
+      meta:Object.keys(s.metadata||{}).map(k=>`${k}=${s.metadata[k]}`).join('  ·  ') }));
+
+    // contradictions
+    base.contradictions=(g.contradictions||[]).map(c=>({ id:c.contradiction_id,
+      a:c.finding_a, b:c.finding_b, vs:c.finding_b?('⇄ '+c.finding_b):'⇄ evidence inventory',
+      desc:c.description, resD:c.resolution||'Unresolved — see follow-up tasks below.',
+      resColor:c.resolution?'#a9c2a9':'#9a9da1',
+      status:c.status==='OPEN'?'open':'resolved', statusColor:c.status==='OPEN'?'#d9a04b':'#5fbf90',
+      taskD:(c.follow_up_tasks||[]).length?('follow-up: '+(c.follow_up_tasks||[]).join(', ')):'no follow-up tasks',
+      onA:()=>this.setState({ view:'detail', selectedId:c.finding_a }) }));
+    base.contraOpen=contraOpen; base.contraResolved=contraResolved;
+
+    // queue
+    base.qPriority=this.state.qPriority;
+    const prMeta={ HIGH:{color:'#d76a5f'}, MEDIUM:{color:'#d9a04b'}, LOW:{color:'#6a6d72'} };
+    const stMeta={ PENDING:{color:'#d9a04b',label:'pending'}, BLOCKED:{color:'#d76a5f',label:'blocked'}, DONE:{color:'#5fbf90',label:'done'} };
+    let queue=(g.investigation_queue||[]).map(t=>({ id:t.task_id, desc:t.description, trigger:t.triggered_by,
+      priority:t.priority, prColor:(prMeta[t.priority]||{}).color, status:t.status, stLabel:(stMeta[t.status]||{}).label, stColor:(stMeta[t.status]||{}).color,
+      resultD:(t.result_finding_ids||[]).length?('produced '+(t.result_finding_ids||[]).join(', ')):'' }));
+    base.queueAll=queue;
+    base.qpFilters=['all','HIGH','MEDIUM','LOW'].map(p=>({ label:p==='all'?'all priorities':p.toLowerCase(), active:this.state.qPriority===p,
+      onClick:()=>this.setState({ qPriority:p }), color:this.state.qPriority===p?'#08090b':'#8c8f94',
+      bg:this.state.qPriority===p?'#df9a4d':'transparent', border:this.state.qPriority===p?'#df9a4d':'rgba(255,255,255,0.12)' }));
+    base.queue = this.state.qPriority==='all'?queue:queue.filter(t=>t.priority===this.state.qPriority);
+    base.queueStats=['PENDING','BLOCKED','DONE'].map(s=>({ label:(stMeta[s]||{}).label, color:(stMeta[s]||{}).color,
+      count:(g.investigation_queue||[]).filter(t=>t.status===s).length }));
+
+    // report (grouped)
+    const inkFor=s=>s==='CONFIRMED'?'#2f7d57':s==='INFERRED'?'#2d5d96':s==='ELIMINATED'?'#b03f34':'#6a6357';
+    const anchorLine=v=>`${v.anchor.sourceId} · ${v.anchor.toolExec} · ${v.anchor.hasPath?v.anchor.artifactPath:(v.anchor.rawRefD)}`;
+    const short=s=>{ s=s||''; return s.length>150?s.slice(0,150).replace(/\s\S*$/,'')+'…':s; };
+    const decorate=arr=>arr.map(v=>Object.assign({}, v, { inkColor:inkFor(v.status), anchorLine:anchorLine(v), summaryShort:short(v.summary) }));
+    const grp=s=>decorate(vms.filter(v=>v.status===s));
+    base.report={
+      caseId:g.case_id, agentVersion:g.metadata.agent_version, toolExec:g.metadata.total_tool_executions, nSources:(g.evidence_sources||[]).length,
+      start:this.fmtDT(g.metadata.analysis_start), end:this.fmtDT(g.metadata.analysis_end), duration:this.durStr(g.metadata.analysis_start,g.metadata.analysis_end),
+      supported:grp('CONFIRMED').concat(grp('INFERRED')), hypotheses:grp('HYPOTHESIS'), eliminated:grp('ELIMINATED'),
+      nConfirmed:byStatus('CONFIRMED'), nInferred:byStatus('INFERRED'), nHypo:byStatus('HYPOTHESIS'), nElim:byStatus('ELIMINATED'),
+      sources:base.sources, valTotals:base.valTotals
+    };
+    base.printReport=()=>{ try{ window.print(); }catch(e){} };
+
+    return base;
+  }
+}
+</script>
+</body>
+</html>
