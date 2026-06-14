@@ -1,6 +1,6 @@
 """Converts the evidence graph into a structured investigative report.
 
-The report is the final deliverable — what an incident responder hands to a
+The report is the final deliverable - what an incident responder hands to a
 CISO, legal team, or remediation team. It is auto-generated from the evidence
 graph (not LLM-written), so it accurately reflects the graph state and every
 claim traces back to a specific artifact through the graph.
@@ -23,11 +23,42 @@ from ..evidence_graph.graph import EvidenceGraphManager
 
 
 _CORROBORATION_INDICATOR = {
-    CorroborationType.INDEPENDENT_SOURCES: "🟢 independent_sources",
-    CorroborationType.SINGLE_SOURCE_CORROBORATED: "🟡 single_source_corroborated",
-    CorroborationType.SINGLE_SOURCE_NARRATED: "🟠 single_source_narrated",
-    CorroborationType.NOT_APPLICABLE: "— not_applicable",
+    CorroborationType.INDEPENDENT_SOURCES: "[STRONG] independent_sources",
+    CorroborationType.SINGLE_SOURCE_CORROBORATED: "[MODERATE] single_source_corroborated",
+    CorroborationType.SINGLE_SOURCE_NARRATED: "[WEAK] single_source_narrated",
+    CorroborationType.NOT_APPLICABLE: "[N/A] not_applicable",
 }
+
+# Maps common typographic Unicode that shows up in agent-authored finding text
+# to plain ASCII equivalents. Finding summaries and resolutions are free text and
+# may contain smart quotes, dashes, or ellipses; normalizing them keeps the report
+# pure ASCII-safe markdown that renders identically everywhere (including GitHub).
+_ASCII_NORMALIZATION = {
+    "—": "-",   # em dash
+    "–": "-",   # en dash
+    "‒": "-",   # figure dash
+    "―": "-",   # horizontal bar
+    "‘": "'",   # left single quote
+    "’": "'",   # right single quote / apostrophe
+    "“": '"',   # left double quote
+    "”": '"',   # right double quote
+    "…": "...",  # ellipsis
+    "→": "->",  # rightwards arrow
+    "•": "-",   # bullet
+    " ": " ",   # non-breaking space
+}
+
+
+def _ascii_safe(text: str) -> str:
+    """Normalize typographic Unicode to ASCII so the report renders cleanly.
+
+    Known characters are mapped explicitly; any remaining non-ASCII codepoint is
+    dropped so the output is guaranteed pure ASCII. This only touches presentation
+    -- the underlying evidence graph is never modified.
+    """
+    for unicode_char, ascii_char in _ASCII_NORMALIZATION.items():
+        text = text.replace(unicode_char, ascii_char)
+    return text.encode("ascii", "ignore").decode("ascii")
 
 
 class ReportGenerator:
@@ -54,7 +85,7 @@ class ReportGenerator:
             self._coverage_gaps(),
             self._audit_trail(),
         ]
-        return "\n\n---\n\n".join(sections)
+        return _ascii_safe("\n\n---\n\n".join(sections))
 
     def save_report(self, filepath: str) -> None:
         """Generate and save the report to a markdown file."""
@@ -82,7 +113,7 @@ class ReportGenerator:
         if anchor is None:
             return "no anchor"
         ref = anchor.artifact_path or anchor.offset or anchor.log_entry or "unspecified"
-        return f"{anchor.source_id} → {ref}"
+        return f"{anchor.source_id} -> {ref}"
 
     @staticmethod
     def _status_chain(finding: Finding) -> str:
@@ -91,7 +122,7 @@ class ReportGenerator:
             return finding.status.value
         chain = [history[0].from_status.value]
         chain.extend(record.to_status.value for record in history)
-        return " → ".join(chain)
+        return " -> ".join(chain)
 
     def _total_status_changes(self) -> int:
         return sum(len(f.promotion_history) for f in self._g.findings)
@@ -102,7 +133,7 @@ class ReportGenerator:
         meta = self._g.metadata
         end = meta.analysis_end or "ongoing"
         return (
-            "# SIFT Sentinel — Forensic Analysis Report\n"
+            "# SIFT Sentinel - Forensic Analysis Report\n"
             f"**Case ID:** {self._g.case_id}  \n"
             f"**Analysis Date:** {meta.analysis_start} to {end}  \n"
             f"**Agent Version:** {meta.agent_version}  \n"
@@ -163,11 +194,11 @@ class ReportGenerator:
             meta_str = (
                 ", ".join(f"{k}={v}" for k, v in interesting.items())
                 if interesting
-                else "—"
+                else "None"
             )
             lines.append(
                 f"| {s.source_id} | {s.source_type} | {s.path} | "
-                f"{s.sha256} | {s.mounted_at or '—'} | {meta_str} |"
+                f"{s.sha256} | {s.mounted_at or 'None'} | {meta_str} |"
             )
         return "\n".join(lines)
 
@@ -199,7 +230,7 @@ class ReportGenerator:
             f"- **Evidence Anchor:** {self._anchor_reference(finding)}",
             f"- **File Hash:** {file_hash}",
             f"- **Tool Execution:** {exec_line}",
-            f"- **Reasoning Chain:** {chain.logic or '—'} "
+            f"- **Reasoning Chain:** {chain.logic or 'N/A'} "
             f"(Corroboration: {corroboration})",
             f"  - Premises: {premises}",
             f"- **Validation:** {passed} validator(s) passed",
@@ -227,6 +258,21 @@ class ReportGenerator:
             "independently verified by a second artifact type._"
         )
         lines.append("")
+        lines.append("**Corroboration legend:**")
+        lines.append("")
+        lines.append(
+            "- [STRONG] independent_sources - multiple independent artifact "
+            "types agree"
+        )
+        lines.append(
+            "- [MODERATE] single_source_corroborated - one artifact with "
+            "supporting context"
+        )
+        lines.append(
+            "- [WEAK] single_source_narrated - one artifact, agent-constructed "
+            "interpretation"
+        )
+        lines.append("")
         for f in findings:
             lines.append(self._render_finding(f))
             if f.reasoning_chain.corroboration_type == (
@@ -234,9 +280,9 @@ class ReportGenerator:
             ):
                 lines.append("")
                 lines.append(
-                    "> ⚠️ This inference rests on a narrated connection from a "
-                    "single artifact. The reasoning chain should be evaluated "
-                    "independently."
+                    "> **Note:** This inference rests on a narrated connection "
+                    "from a single artifact. The reasoning chain should be "
+                    "evaluated independently."
                 )
             lines.append("")
         return "\n".join(lines).rstrip()
@@ -309,8 +355,8 @@ class ReportGenerator:
             sum_b = self._finding_summary(c.finding_b)
             lines.append(f"### [{c.contradiction_id}] {c.status}")
             lines.append("")
-            lines.append(f"- **Finding A:** {c.finding_a} — {sum_a}")
-            lines.append(f"- **Finding B:** {c.finding_b} — {sum_b}")
+            lines.append(f"- **Finding A:** {c.finding_a} - {sum_a}")
+            lines.append(f"- **Finding B:** {c.finding_b} - {sum_b}")
             lines.append(f"- **Description:** {c.description}")
             lines.append(f"- **Status:** {c.status}")
             if c.resolution:
