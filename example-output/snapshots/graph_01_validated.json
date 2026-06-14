@@ -1,0 +1,13 @@
+{
+  "case_id": "TEST-001",
+  "evidence_sources": [],
+  "findings": [],
+  "contradictions": [],
+  "investigation_queue": [],
+  "metadata": {
+    "agent_version": "0.1.0",
+    "total_tool_executions": 0,
+    "analysis_start": "2026-06-14T00:09:41.670746+00:00",
+    "analysis_end": ""
+  }
+}

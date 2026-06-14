@@ -1,0 +1,830 @@
+{
+  "case_id": "TEST-001",
+  "evidence_sources": [
+    {
+      "source_id": "src-001",
+      "source_type": "registry_hive",
+      "path": "~/cases/mini-case/Registry/SYSTEM",
+      "sha256": "df7a71db7620833bd26c372ae2ea50af37b5373e68596f77baa96f19603299e7",
+      "mounted_at": "~/cases/mini-case/Registry/SYSTEM",
+      "metadata": {
+        "hive": "SYSTEM",
+        "tool": "regripper -a",
+        "exec_id": "exec-rr-system"
+      }
+    },
+    {
+      "source_id": "src-002",
+      "source_type": "registry_hive",
+      "path": "~/cases/mini-case/Registry/SOFTWARE",
+      "sha256": "0fae27bfd7dfefa70a483bbf96cb4f48e3b2af6350746162f4796b3b9950576f",
+      "mounted_at": "~/cases/mini-case/Registry/SOFTWARE",
+      "metadata": {
+        "hive": "SOFTWARE",
+        "tool": "regripper -a",
+        "exec_id": "exec-rr-software"
+      }
+    },
+    {
+      "source_id": "src-003",
+      "source_type": "registry_hive",
+      "path": "~/cases/mini-case/Registry/SAM",
+      "sha256": "150661dfad239bc7f5fc990904bc116208f802677cadefad22cb07f02d8e579a",
+      "mounted_at": "~/cases/mini-case/Registry/SAM",
+      "metadata": {
+        "hive": "SAM",
+        "tool": "regripper -a",
+        "exec_id": "exec-rr-sam"
+      }
+    },
+    {
+      "source_id": "src-004",
+      "source_type": "prefetch_directory",
+      "path": "~/cases/mini-case/Prefetch/",
+      "sha256": "N/A-directory-listing",
+      "mounted_at": "~/cases/mini-case/Prefetch/",
+      "metadata": {
+        "file_count": 500,
+        "unique_programs": 268,
+        "tool": "ls",
+        "exec_id": "exec-pf-list"
+      }
+    },
+    {
+      "source_id": "src-005",
+      "source_type": "event_log",
+      "path": "~/cases/mini-case/EventLogs/System.evtx",
+      "sha256": "N/A-strings-extraction",
+      "mounted_at": "~/cases/mini-case/EventLogs/System.evtx",
+      "metadata": {
+        "tool": "strings -el",
+        "exec_id": "exec-evtx-system"
+      }
+    },
+    {
+      "source_id": "src-006",
+      "source_type": "event_log",
+      "path": "~/cases/mini-case/EventLogs/Security.evtx",
+      "sha256": "N/A-strings-extraction",
+      "mounted_at": "~/cases/mini-case/EventLogs/Security.evtx",
+      "metadata": {
+        "tool": "strings -el",
+        "exec_id": "exec-evtx-security"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "status": "ELIMINATED",
+      "category": "account_anomaly",
+      "summary": "Local user account 'Aditya' (RID 1001) is configured with 'Password not required' and carries a password hint reading 'Same as the main google account pass', indicating the local Windows password is reused for the user's Google account and that an empty/blank password would be accepted by policy.",
+      "evidence_anchor": {
+        "source_id": "src-003",
+        "tool_execution_id": "exec-rr-sam",
+        "artifact_path": "SAM\\SAM\\Domains\\Account\\Users\\000003E9",
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "Username        : Aditya [1001]\nPassword Hint   : Same as the main google account pass\n  --> Password not required\n  --> Password does not expire",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [],
+        "logic": "",
+        "corroboration_type": "not_applicable",
+        "chain_rendered": false
+      },
+      "mitre_attack": [],
+      "linked_findings": [],
+      "contradictions": [],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-003.",
+          "timestamp": "2026-06-14T00:28:18.698695+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:28:18.698711+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "FAIL_SOFT",
+          "detail": "Path unresolved: 'SAM\\SAM\\Domains\\Account\\Users\\000003E9' not found at expected location under ~/cases/mini-case/Registry/SAM. Attempted: direct resolution, case-insensitive match, Windows prefix normalization. This may indicate a naming variant, deleted file, or hallucinated path. Finding remains at current status with 'path_unresolved' flag recommended.",
+          "timestamp": "2026-06-14T00:28:18.698747+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:28:18.698750+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "FAIL_HARD",
+          "detail": "CATEGORICAL ABSENCE \u2014 none of the 2 extracted claims (filenames, hashes, PIDs) appear in any form in the tool output for execution exec-rr-sam. The agent's finding appears to be entirely fabricated. Claims checked: filename=000003E9; path=SAM\\SAM\\Domains\\Account\\Users\\000003E9.",
+          "timestamp": "2026-06-14T00:28:18.698822+00:00"
+        }
+      ],
+      "promotion_history": [
+        {
+          "from_status": "HYPOTHESIS",
+          "to_status": "ELIMINATED",
+          "reason": "Validator: CATEGORICAL ABSENCE \u2014 none of the 2 extracted claims (filenames, hashes, PIDs) appear in any form in the tool output for execution exec-rr-sam. The agent's finding appears to be entirely fabricated. Claims checked: filename=000003E9; path=SAM\\SAM\\Domains\\Account\\Users\\000003E9.",
+          "triggered_by": "validator:tool_output_fidelity",
+          "timestamp": "2026-06-14T00:28:18.698842+00:00"
+        }
+      ],
+      "flags": [],
+      "created_at": "2026-06-14T00:28:00.676013+00:00",
+      "last_updated": "2026-06-14T00:28:18.698842+00:00"
+    },
+    {
+      "finding_id": "F-002",
+      "status": "HYPOTHESIS",
+      "category": "network_activity",
+      "summary": "ngrok.exe (a third-party network tunneling/reverse-proxy utility) was downloaded to C:\\Users\\Aditya\\Downloads\\ngrok-v3-stable-windows-amd64\\ and executed under the user's SID (S-1-5-21-861007328-302799644-2273878273-1001) per the BAM record at 2026-06-08 11:46:12Z. A separate copy was also extracted/run from a temp zip path on 2026-06-05. ngrok can be used to expose local services to the internet or establish outbound tunnels, which is dual-use: legitimate for development but also a common remote-access/exfiltration technique.",
+      "evidence_anchor": {
+        "source_id": "src-001",
+        "tool_execution_id": "exec-rr-system",
+        "artifact_path": "\\Device\\HarddiskVolume3\\Users\\Aditya\\Downloads\\ngrok-v3-stable-windows-amd64\\ngrok.exe",
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "S-1-5-21-861007328-302799644-2273878273-1001\n  2026-06-08 11:46:12Z - \\Device\\HarddiskVolume3\\Users\\Aditya\\Downloads\\ngrok-v3-stable-windows-amd64\\ngrok.exe",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [],
+        "logic": "",
+        "corroboration_type": "not_applicable",
+        "chain_rendered": false
+      },
+      "mitre_attack": [
+        "T1572"
+      ],
+      "linked_findings": [],
+      "contradictions": [],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-001.",
+          "timestamp": "2026-06-14T00:28:18.698860+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:28:18.698863+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "FAIL_SOFT",
+          "detail": "Path unresolved: '\\Device\\HarddiskVolume3\\Users\\Aditya\\Downloads\\ngrok-v3-stable-windows-amd64\\ngrok.exe' not found at expected location under ~/cases/mini-case/Registry/SYSTEM. Attempted: direct resolution, case-insensitive match, Windows prefix normalization. This may indicate a naming variant, deleted file, or hallucinated path. Finding remains at current status with 'path_unresolved' flag recommended.",
+          "timestamp": "2026-06-14T00:28:18.698883+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:28:18.698884+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "PASS",
+          "detail": "All 2 claims verified in tool output (exact matches).",
+          "timestamp": "2026-06-14T00:28:18.701092+00:00"
+        }
+      ],
+      "promotion_history": [],
+      "flags": [],
+      "created_at": "2026-06-14T00:28:00.676021+00:00",
+      "last_updated": "2026-06-14T00:28:18.701107+00:00"
+    },
+    {
+      "finding_id": "F-003",
+      "status": "HYPOTHESIS",
+      "category": "persistence",
+      "summary": "sdbinst.exe (Application Compatibility Database installer, used by T1546.011 'Application Shimming' persistence) was executed under the SYSTEM account (S-1-5-18) at 2026-06-13 22:56:07Z per the BAM record. No custom entries were found under AppCompatFlags\\Layers / Custom AppCompatDatabase in the SOFTWARE hive, so this is most likely a legitimate compatibility-shim registration performed by a software installer rather than malicious persistence, but the specific .sdb package installed could not be identified from registry data alone.",
+      "evidence_anchor": {
+        "source_id": "src-001",
+        "tool_execution_id": "exec-rr-system",
+        "artifact_path": "\\Device\\HarddiskVolume3\\Windows\\System32\\sdbinst.exe",
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "S-1-5-18\n  2026-06-13 22:56:07Z - \\Device\\HarddiskVolume3\\Windows\\System32\\sdbinst.exe",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [],
+        "logic": "",
+        "corroboration_type": "not_applicable",
+        "chain_rendered": false
+      },
+      "mitre_attack": [
+        "T1546.011"
+      ],
+      "linked_findings": [],
+      "contradictions": [],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-001.",
+          "timestamp": "2026-06-14T00:28:18.701112+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:28:18.701115+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "FAIL_SOFT",
+          "detail": "Path unresolved: '\\Device\\HarddiskVolume3\\Windows\\System32\\sdbinst.exe' not found at expected location under ~/cases/mini-case/Registry/SYSTEM. Attempted: direct resolution, case-insensitive match, Windows prefix normalization. This may indicate a naming variant, deleted file, or hallucinated path. Finding remains at current status with 'path_unresolved' flag recommended.",
+          "timestamp": "2026-06-14T00:28:18.701137+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:28:18.701138+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "PASS",
+          "detail": "All 2 claims verified in tool output (exact matches).",
+          "timestamp": "2026-06-14T00:28:18.702534+00:00"
+        }
+      ],
+      "promotion_history": [],
+      "flags": [],
+      "created_at": "2026-06-14T00:28:00.676027+00:00",
+      "last_updated": "2026-06-14T00:28:18.702549+00:00"
+    },
+    {
+      "finding_id": "F-004",
+      "status": "HYPOTHESIS",
+      "category": "network_activity",
+      "summary": "A VPN network interface (adapter GUID {09DB18D7-2DE2-4430-A758-DAE53C8A58A9}, VPNInterface=1) is configured under ControlSet001\\Services\\Tcpip\\Parameters\\Interfaces, last written 2025-06-12 15:18:30Z. This indicates VPN client software has been used or configured on this host. No DHCP lease information is present for this adapter, consistent with a VPN tunnel interface rather than a physical NIC.",
+      "evidence_anchor": {
+        "source_id": "src-001",
+        "tool_execution_id": "exec-rr-system",
+        "artifact_path": "ControlSet001\\Services\\Tcpip\\Parameters\\Interfaces\\{09DB18D7-2DE2-4430-A758-DAE53C8A58A9}",
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "Adapter: {09DB18D7-2DE2-4430-A758-DAE53C8A58A9}\nLastWrite Time: 2025-06-12 15:18:30Z\n  VPNInterface                 1",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [],
+        "logic": "",
+        "corroboration_type": "not_applicable",
+        "chain_rendered": false
+      },
+      "mitre_attack": [],
+      "linked_findings": [],
+      "contradictions": [],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-001.",
+          "timestamp": "2026-06-14T00:28:18.702554+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:28:18.702557+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "FAIL_SOFT",
+          "detail": "Path unresolved: 'ControlSet001\\Services\\Tcpip\\Parameters\\Interfaces\\{09DB18D7-2DE2-4430-A758-DAE53C8A58A9}' not found at expected location under ~/cases/mini-case/Registry/SYSTEM. Attempted: direct resolution, case-insensitive match, Windows prefix normalization. This may indicate a naming variant, deleted file, or hallucinated path. Finding remains at current status with 'path_unresolved' flag recommended.",
+          "timestamp": "2026-06-14T00:28:18.702571+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:28:18.702573+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "PASS",
+          "detail": "All 2 claims present in tool output (1 exact, 0 normalized format, 1 partial matches).",
+          "timestamp": "2026-06-14T00:28:18.704116+00:00"
+        }
+      ],
+      "promotion_history": [],
+      "flags": [],
+      "created_at": "2026-06-14T00:28:00.676030+00:00",
+      "last_updated": "2026-06-14T00:28:18.704132+00:00"
+    },
+    {
+      "finding_id": "F-005",
+      "status": "HYPOTHESIS",
+      "category": "account_anomaly",
+      "summary": "A scheduled task 'OneDrive Standalone Update Task-S-1-5-21-2789877619-886443328-3103818696-500' (Task Reg Time 2023-06-08 21:16:22Z, last run 2024-03-12 15:11:29Z) references SID S-1-5-21-2789877619-886443328-3103818696-500 (RID 500, i.e. a built-in Administrator account). This SID does not correspond to any account in ProfileList (the only local profile present is S-1-5-21-861007328-302799644-2273878273-1001 'Aditya'), and the SID's machine identifier portion (2789877619-886443328-3103818696) differs from the current machine SID (861007328-302799644-2273878273). This is consistent with a leftover scheduled task from a prior Windows installation/profile that was not cleaned up during reimage or in-place upgrade.",
+      "evidence_anchor": {
+        "source_id": "src-002",
+        "tool_execution_id": "exec-rr-software",
+        "artifact_path": "Microsoft\\Windows\\CurrentVersion\\Schedule\\TaskCache\\Tasks",
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "Path: \\OneDrive Standalone Update Task-S-1-5-21-2789877619-886443328-3103818696-500\nURI : \\OneDrive Standalone Update Task-S-1-5-21-2789877619-886443328-3103818696-500\nTask Reg Time : 2023-06-08 21:16:22Z\nTask Last Run : 2024-03-12 15:11:29Z",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [],
+        "logic": "",
+        "corroboration_type": "not_applicable",
+        "chain_rendered": false
+      },
+      "mitre_attack": [],
+      "linked_findings": [],
+      "contradictions": [],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-002.",
+          "timestamp": "2026-06-14T00:28:18.704137+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:28:18.704140+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "FAIL_SOFT",
+          "detail": "Path unresolved: 'Microsoft\\Windows\\CurrentVersion\\Schedule\\TaskCache\\Tasks' not found at expected location under ~/cases/mini-case/Registry/SOFTWARE. Attempted: direct resolution, case-insensitive match, Windows prefix normalization. This may indicate a naming variant, deleted file, or hallucinated path. Finding remains at current status with 'path_unresolved' flag recommended.",
+          "timestamp": "2026-06-14T00:28:18.704154+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:28:18.704156+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "PASS",
+          "detail": "All 2 claims present in tool output (1 exact, 0 normalized format, 1 partial matches).",
+          "timestamp": "2026-06-14T00:28:18.719885+00:00"
+        }
+      ],
+      "promotion_history": [],
+      "flags": [],
+      "created_at": "2026-06-14T00:28:00.676033+00:00",
+      "last_updated": "2026-06-14T00:28:18.719923+00:00"
+    },
+    {
+      "finding_id": "F-006",
+      "status": "INFERRED",
+      "category": "persistence",
+      "summary": "Full review of ControlSet001\\Services (RegRipper 'services' plugin, ~280 entries) found no services with ImagePath values pointing to user-writable locations (Temp, AppData, Downloads) or unsigned/unknown binaries. All non-Microsoft services correspond to known legitimate third-party software already present on this developer/gaming workstation (NVIDIA, MSI, Adobe, Steam, Docker, PostgreSQL, MySQL, Splunk, Brave/Edge/Chrome updaters, BattlEye, Windhawk, OpenSSH ssh-agent, etc.). No suspicious autostart services were identified.",
+      "evidence_anchor": {
+        "source_id": "src-001",
+        "tool_execution_id": "exec-rr-system",
+        "artifact_path": "ControlSet001\\Services",
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "services v.20191024 - Lists services/drivers in Services key by LastWrite times",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [
+          "RegRipper 'services' plugin enumerated all ControlSet001\\Services subkeys with ImagePath values.",
+          "None of the non-Microsoft ImagePath values point to Temp, AppData, Downloads, or other user-writable paths.",
+          "All identified third-party services map to software products with corresponding installations/BAM execution evidence on this host."
+        ],
+        "logic": "Absence of unusual service ImagePaths across a full enumeration is itself a finding worth recording per analysis rules: it establishes that no obvious service-based persistence mechanism is present.",
+        "corroboration_type": "single_source_narrated",
+        "chain_rendered": true
+      },
+      "mitre_attack": [],
+      "linked_findings": [],
+      "contradictions": [],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-001.",
+          "timestamp": "2026-06-14T00:28:18.719931+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:28:18.719936+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "FAIL_SOFT",
+          "detail": "Path unresolved: 'ControlSet001\\Services' not found at expected location under ~/cases/mini-case/Registry/SYSTEM. Attempted: direct resolution, case-insensitive match, Windows prefix normalization. This may indicate a naming variant, deleted file, or hallucinated path. Finding remains at current status with 'path_unresolved' flag recommended.",
+          "timestamp": "2026-06-14T00:28:18.719974+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:28:18.719976+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "PASS",
+          "detail": "All 2 claims verified in tool output (exact matches).",
+          "timestamp": "2026-06-14T00:28:18.721458+00:00"
+        }
+      ],
+      "promotion_history": [],
+      "flags": [],
+      "created_at": "2026-06-14T00:28:00.676037+00:00",
+      "last_updated": "2026-06-14T00:28:18.721497+00:00"
+    },
+    {
+      "finding_id": "F-007",
+      "status": "HYPOTHESIS",
+      "category": "account_anomaly",
+      "summary": "Local user account 'Aditya' (RID 1001, embedded RID 1001) is configured with 'Password not required' and carries a password hint reading 'Same as the main google account pass', indicating the local Windows password is reused for the user's Google account and that an empty/blank password would be accepted by Windows account policy for this account.",
+      "evidence_anchor": {
+        "source_id": "src-003",
+        "tool_execution_id": "exec-rr-sam",
+        "artifact_path": null,
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "Username        : Aditya [1001]\nPassword Hint   : Same as the main google account pass\nEmbedded RID    : 1001\n  --> Password not required\n  --> Password does not expire",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [],
+        "logic": "",
+        "corroboration_type": "not_applicable",
+        "chain_rendered": false
+      },
+      "mitre_attack": [],
+      "linked_findings": [],
+      "contradictions": [],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-003.",
+          "timestamp": "2026-06-14T00:28:49.530844+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:28:49.530854+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No artifact path to verify \u2014 finding may reference an offset or log entry instead.",
+          "timestamp": "2026-06-14T00:28:49.530857+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:28:49.530860+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No verifiable claims could be extracted from this finding.",
+          "timestamp": "2026-06-14T00:28:49.530876+00:00"
+        }
+      ],
+      "promotion_history": [],
+      "flags": [
+        "supersedes:F-001 (F-001 eliminated due to a fabricated artifact_path in its anchor; this finding restates the same substantive observation with a corrected anchor)"
+      ],
+      "created_at": "2026-06-14T00:28:49.523616+00:00",
+      "last_updated": "2026-06-14T00:28:49.530891+00:00"
+    },
+    {
+      "finding_id": "F-008",
+      "status": "HYPOTHESIS",
+      "category": "execution_evidence",
+      "summary": "Prefetch evidence shows CLUELY.EXE was executed on this host (C:\\Windows\\Prefetch\\CLUELY.EXE-333AB11B.pf present). 'Cluely' is a commercially marketed AI assistant explicitly designed to run invisibly during screen-shares/recordings (interviews, exams, meetings) to avoid detection by proctoring or screen-capture software. Its presence on a personal workstation is unusual software worth noting; no malicious activity is implied, but it is the type of tool that can trip 'unauthorized software' or academic/ interview integrity policies.",
+      "evidence_anchor": {
+        "source_id": "src-004",
+        "tool_execution_id": "exec-pf-list",
+        "artifact_path": "C:\\Windows\\Prefetch\\CLUELY.EXE-333AB11B.pf",
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "CLUELY.EXE-333AB11B.pf",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [],
+        "logic": "",
+        "corroboration_type": "not_applicable",
+        "chain_rendered": false
+      },
+      "mitre_attack": [],
+      "linked_findings": [],
+      "contradictions": [
+        "C-001",
+        "C-003"
+      ],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-004.",
+          "timestamp": "2026-06-14T00:38:29.425399+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:38:29.425417+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "FAIL_SOFT",
+          "detail": "Path unresolved: 'C:\\Windows\\Prefetch\\CLUELY.EXE-333AB11B.pf' not found at expected location under ~/cases/mini-case/Prefetch/. Attempted: direct resolution, case-insensitive match, Windows prefix normalization. This may indicate a naming variant, deleted file, or hallucinated path. Finding remains at current status with 'path_unresolved' flag recommended.",
+          "timestamp": "2026-06-14T00:38:29.425473+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:38:29.425478+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "PASS",
+          "detail": "All 2 claims present in tool output (1 exact, 0 normalized format, 1 partial matches).",
+          "timestamp": "2026-06-14T00:38:29.425578+00:00"
+        }
+      ],
+      "promotion_history": [],
+      "flags": [
+        "amcache_mft_unavailable: AmCache/MFT/USN not collected for this case, cannot cross-validate"
+      ],
+      "created_at": "2026-06-14T00:38:29.400187+00:00",
+      "last_updated": "2026-06-14T00:38:59.422098+00:00"
+    },
+    {
+      "finding_id": "F-009",
+      "status": "HYPOTHESIS",
+      "category": "execution_evidence",
+      "summary": "Prefetch evidence shows execution of GET-GRAPHICS-OFFSETS32.EXE, GET-GRAPHICS-OFFSETS64.EXE, STREEM.EXE, SWITCHBLADE_HOST.EXE, BTOOL.EXE, and PET.EXE, alongside RAINBOWSIX_BE.EXE (Rainbow Six Siege's BattlEye anti-cheat component, also seen executing in the BAM data) and GTA5_ENHANCED_BE.EXE (GTA5 Enhanced's BattlEye component). 'Get-Graphics-Offsets' style utilities are commonly associated with game-cheat/trainer toolkits that dump in-memory structure offsets for building ESP/overlay cheats, and are a recognized malware delivery vector (cheat loaders bundling infostealers). This combination of filenames is unusual software warranting follow-up \u2014 specifically identifying the on-disk paths and hashes of these binaries (not recoverable from filenames alone since Prefetch is MAM-compressed and no decompressor was available).",
+      "evidence_anchor": {
+        "source_id": "src-004",
+        "tool_execution_id": "exec-pf-list",
+        "artifact_path": "C:\\Windows\\Prefetch\\GET-GRAPHICS-OFFSETS64.EXE-2883828B.pf",
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "GET-GRAPHICS-OFFSETS32.EXE-D180B9CA.pf\nGET-GRAPHICS-OFFSETS64.EXE-2883828B.pf\nSTREEM.EXE-2D6A09A2.pf\nSWITCHBLADE_HOST.EXE-3EB43185.pf\nBTOOL.EXE-51372FC5.pf\nPET.EXE-1AD9D175.pf\nRAINBOWSIX_BE.EXE-127869EE.pf\nGTA5_ENHANCED_BE.EXE-3E047DE7.pf",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [],
+        "logic": "",
+        "corroboration_type": "not_applicable",
+        "chain_rendered": false
+      },
+      "mitre_attack": [
+        "T1588.002"
+      ],
+      "linked_findings": [],
+      "contradictions": [
+        "C-002",
+        "C-004"
+      ],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-004.",
+          "timestamp": "2026-06-14T00:38:29.425603+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:38:29.425606+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "FAIL_SOFT",
+          "detail": "Path unresolved: 'C:\\Windows\\Prefetch\\GET-GRAPHICS-OFFSETS64.EXE-2883828B.pf' not found at expected location under ~/cases/mini-case/Prefetch/. Attempted: direct resolution, case-insensitive match, Windows prefix normalization. This may indicate a naming variant, deleted file, or hallucinated path. Finding remains at current status with 'path_unresolved' flag recommended.",
+          "timestamp": "2026-06-14T00:38:29.425617+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:38:29.425619+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "PASS",
+          "detail": "All 2 claims present in tool output (1 exact, 0 normalized format, 1 partial matches).",
+          "timestamp": "2026-06-14T00:38:29.425692+00:00"
+        }
+      ],
+      "promotion_history": [],
+      "flags": [
+        "amcache_mft_unavailable: AmCache/MFT/USN not collected for this case, cannot cross-validate"
+      ],
+      "created_at": "2026-06-14T00:38:29.400192+00:00",
+      "last_updated": "2026-06-14T00:38:59.422101+00:00"
+    },
+    {
+      "finding_id": "F-010",
+      "status": "INFERRED",
+      "category": "event_log",
+      "summary": "Reviewed System.evtx and Security.evtx via 'strings -el' (no EvtxECmd available, so structured BinXML records could not be parsed; only embedded UTF-16LE string fragments were searched). No remote/external IP addresses were found in Security.evtx (only 127.0.0.1, 27 occurrences); no command-line content from process- creation auditing was recoverable (CommandLine field names appear in event templates but populated values were not extracted as plain strings); no PowerShell encoded-command, IEX, or suspicious rundll32/cmd patterns were found; no account names beyond the known local accounts (Aditya, Administrator, Guest, DefaultAccount, WDAGUtilityAccount, Splunkd) appeared. This negative result is noted per analysis rules; a structured EVTX parse (EvtxECmd/python-evtx) would be needed for a definitive review of logon/process-creation events.",
+      "evidence_anchor": {
+        "source_id": "src-006",
+        "tool_execution_id": "exec-evtx-security",
+        "artifact_path": null,
+        "file_hash": null,
+        "offset": null,
+        "log_entry": "127.0.0.1 (27 occurrences); no other IPv4 addresses found in Security.evtx string extraction",
+        "raw_output_reference": null
+      },
+      "reasoning_chain": {
+        "premises": [
+          "strings -el extraction of Security.evtx yields only loopback (127.0.0.1) IP literals.",
+          "strings -el extraction of System.evtx/Security.evtx shows no encoded PowerShell, IEX, or suspicious rundll32/cmd command fragments.",
+          "Only previously-known local account names appear in extracted strings."
+        ],
+        "logic": "Absence of remote-IP logons, suspicious command-line fragments, or unknown account names in the extractable event log strings corroborates the host-profile picture from the registry analysis (personal workstation, no evidence of remote compromise), though this is a weak negative result given strings-based extraction cannot read structured/binary event fields.",
+        "corroboration_type": "single_source_narrated",
+        "chain_rendered": true
+      },
+      "mitre_attack": [],
+      "linked_findings": [],
+      "contradictions": [],
+      "validation_results": [
+        {
+          "validator_name": "platform_consistency",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No OS or filesystem metadata available for source src-006.",
+          "timestamp": "2026-06-14T00:38:29.425710+00:00"
+        },
+        {
+          "validator_name": "temporal_physics",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No capture time or finding timestamps available for temporal validation.",
+          "timestamp": "2026-06-14T00:38:29.425712+00:00"
+        },
+        {
+          "validator_name": "path_existence",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No artifact path to verify \u2014 finding may reference an offset or log entry instead.",
+          "timestamp": "2026-06-14T00:38:29.425714+00:00"
+        },
+        {
+          "validator_name": "hash_verification",
+          "verdict": "NOT_APPLICABLE",
+          "detail": "No hash claim in evidence anchor \u2014 nothing to verify.",
+          "timestamp": "2026-06-14T00:38:29.425715+00:00"
+        },
+        {
+          "validator_name": "tool_output_fidelity",
+          "verdict": "PASS",
+          "detail": "All 1 claims verified in tool output (exact matches).",
+          "timestamp": "2026-06-14T00:38:29.427474+00:00"
+        }
+      ],
+      "promotion_history": [],
+      "flags": [],
+      "created_at": "2026-06-14T00:38:29.400198+00:00",
+      "last_updated": "2026-06-14T00:38:29.427499+00:00"
+    }
+  ],
+  "contradictions": [
+    {
+      "contradiction_id": "C-001",
+      "finding_a": "F-008",
+      "finding_b": "",
+      "description": "Prefetch shows execution of 'CLUELY.EXE-333AB11B.pf' (finding F-008) but no corresponding AmCache entry found. Either AmCache was cleared, the finding is from a different time window, or the prefetch finding may be incorrectly attributed.",
+      "resolution": "Not a genuine contradiction: this evidence set contains only the SYSTEM, SOFTWARE, and SAM registry hives, EventLogs, and Prefetch directory \u2014 no AmCache.hve and no disk image/MFT/USN journal were collected, so cross-referencing against those artifact types is not possible here. The correlation engine's expectation reflects a data-availability gap, not evidence that the finding is fabricated; the Prefetch filename itself is the primary artifact and was verified present via directory listing.",
+      "follow_up_tasks": [],
+      "status": "RESOLVED"
+    },
+    {
+      "contradiction_id": "C-002",
+      "finding_a": "F-009",
+      "finding_b": "",
+      "description": "Prefetch shows execution of 'GET-GRAPHICS-OFFSETS64.EXE-2883828B.pf' (finding F-009) but no corresponding AmCache entry found. Either AmCache was cleared, the finding is from a different time window, or the prefetch finding may be incorrectly attributed.",
+      "resolution": "Not a genuine contradiction: this evidence set contains only the SYSTEM, SOFTWARE, and SAM registry hives, EventLogs, and Prefetch directory \u2014 no AmCache.hve and no disk image/MFT/USN journal were collected, so cross-referencing against those artifact types is not possible here. The correlation engine's expectation reflects a data-availability gap, not evidence that the finding is fabricated; the Prefetch filename itself is the primary artifact and was verified present via directory listing.",
+      "follow_up_tasks": [],
+      "status": "RESOLVED"
+    },
+    {
+      "contradiction_id": "C-003",
+      "finding_a": "F-008",
+      "finding_b": "",
+      "description": "Execution evidence references 'C:\\Windows\\Prefetch\\CLUELY.EXE-333AB11B.pf' (F-008) but no corresponding MFT/filesystem entry found. File may have been deleted (check USN journal) or the path may be hallucinated.",
+      "resolution": "Not a genuine contradiction: this evidence set contains only the SYSTEM, SOFTWARE, and SAM registry hives, EventLogs, and Prefetch directory \u2014 no AmCache.hve and no disk image/MFT/USN journal were collected, so cross-referencing against those artifact types is not possible here. The correlation engine's expectation reflects a data-availability gap, not evidence that the finding is fabricated; the Prefetch filename itself is the primary artifact and was verified present via directory listing.",
+      "follow_up_tasks": [],
+      "status": "RESOLVED"
+    },
+    {
+      "contradiction_id": "C-004",
+      "finding_a": "F-009",
+      "finding_b": "",
+      "description": "Execution evidence references 'C:\\Windows\\Prefetch\\GET-GRAPHICS-OFFSETS64.EXE-2883828B.pf' (F-009) but no corresponding MFT/filesystem entry found. File may have been deleted (check USN journal) or the path may be hallucinated.",
+      "resolution": "Not a genuine contradiction: this evidence set contains only the SYSTEM, SOFTWARE, and SAM registry hives, EventLogs, and Prefetch directory \u2014 no AmCache.hve and no disk image/MFT/USN journal were collected, so cross-referencing against those artifact types is not possible here. The correlation engine's expectation reflects a data-availability gap, not evidence that the finding is fabricated; the Prefetch filename itself is the primary artifact and was verified present via directory listing.",
+      "follow_up_tasks": [],
+      "status": "RESOLVED"
+    }
+  ],
+  "investigation_queue": [
+    {
+      "task_id": "T-001",
+      "description": "Identify on-disk paths/hashes for GET-GRAPHICS-OFFSETS32/64.EXE, STREEM.EXE, SWITCHBLADE_HOST.EXE, BTOOL.EXE, and PET.EXE (e.g. via filesystem triage or a Prefetch/MAM decompressor) to determine whether these are game-cheat utilities or something else.",
+      "triggered_by": "F-009",
+      "priority": "MEDIUM",
+      "status": "PENDING",
+      "result_finding_ids": []
+    },
+    {
+      "task_id": "T-002",
+      "description": "Check AmCache for temporal gaps suggesting clearance",
+      "triggered_by": "C-001",
+      "priority": "MEDIUM",
+      "status": "BLOCKED",
+      "result_finding_ids": []
+    },
+    {
+      "task_id": "T-003",
+      "description": "Verify prefetch filename matches exactly",
+      "triggered_by": "C-001",
+      "priority": "MEDIUM",
+      "status": "BLOCKED",
+      "result_finding_ids": []
+    },
+    {
+      "task_id": "T-004",
+      "description": "Check AmCache for temporal gaps suggesting clearance",
+      "triggered_by": "C-002",
+      "priority": "MEDIUM",
+      "status": "BLOCKED",
+      "result_finding_ids": []
+    },
+    {
+      "task_id": "T-005",
+      "description": "Verify prefetch filename matches exactly",
+      "triggered_by": "C-002",
+      "priority": "MEDIUM",
+      "status": "BLOCKED",
+      "result_finding_ids": []
+    },
+    {
+      "task_id": "T-006",
+      "description": "Check MFT for deletion record",
+      "triggered_by": "C-003",
+      "priority": "MEDIUM",
+      "status": "BLOCKED",
+      "result_finding_ids": []
+    },
+    {
+      "task_id": "T-007",
+      "description": "Search USN journal for file creation/deletion events",
+      "triggered_by": "C-003",
+      "priority": "MEDIUM",
+      "status": "BLOCKED",
+      "result_finding_ids": []
+    },
+    {
+      "task_id": "T-008",
+      "description": "Check MFT for deletion record",
+      "triggered_by": "C-004",
+      "priority": "MEDIUM",
+      "status": "BLOCKED",
+      "result_finding_ids": []
+    },
+    {
+      "task_id": "T-009",
+      "description": "Search USN journal for file creation/deletion events",
+      "triggered_by": "C-004",
+      "priority": "MEDIUM",
+      "status": "BLOCKED",
+      "result_finding_ids": []
+    }
+  ],
+  "metadata": {
+    "agent_version": "0.1.0",
+    "total_tool_executions": 3,
+    "analysis_start": "2026-06-14T00:09:41.670746+00:00",
+    "analysis_end": "2026-06-14T00:38:59.422106+00:00"
+  }
+}
