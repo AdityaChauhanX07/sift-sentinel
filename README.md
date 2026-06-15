@@ -4,7 +4,7 @@ A grounded forensic reasoning engine for Protocol SIFT. Deterministic hallucinat
 
 Built for the [Find Evil! Hackathon](https://findevil.devpost.com/).
 
-**[Live Demo](https://sift-sentinel.vercel.app)** | **[Analysis Report](example-output/reports/analysis_report.md)** | **[Evidence Graph](example-output/evidence_graph.json)**
+**[Analysis Report](example-output/reports/analysis_report.md)** | **[Evidence Graph](example-output/evidence_graph.json)**
 
 ## The Problem
 
