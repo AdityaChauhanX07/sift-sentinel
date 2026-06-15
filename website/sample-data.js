@@ -1,9 +1,26 @@
-// TEST-001 — sample evidence_graph.json rendered as an ES module.
-// Scenario: ngrok-based remote-access intrusion on a Windows host (user "Aditya").
+// SIFT Sentinel - Data Loader
+// Tries to load real evidence_graph.json, falls back to embedded demo data.
+//
+// Demo scenario: ngrok-based remote-access intrusion on a Windows host (user "Aditya").
 // 6 evidence sources · 10 findings (7 HYPOTHESIS, 2 INFERRED, 1 ELIMINATED)
 // 4 contradictions · 9 investigation tasks.
 
-window.SIFT_GRAPH = {
+(async function() {
+  // Try loading real analysis output first
+  try {
+    const response = await fetch('./evidence_graph.json');
+    if (response.ok) {
+      window.SIFT_GRAPH = await response.json();
+      console.log('[SIFT Sentinel] Loaded real evidence graph:', window.SIFT_GRAPH.case_id);
+      window.dispatchEvent(new Event('sift-data-ready'));
+      return;
+    }
+  } catch (e) {
+    console.log('[SIFT Sentinel] No evidence_graph.json found, using demo data');
+  }
+
+  // Fall back to embedded demo data
+  window.SIFT_GRAPH = {
   case_id: "TEST-001",
   evidence_sources: [
     {
@@ -466,4 +483,8 @@ window.SIFT_GRAPH = {
     analysis_start: "2026-06-14T00:09:41Z",
     analysis_end: "2026-06-14T00:38:59Z"
   }
-};
+  };
+
+  console.log('[SIFT Sentinel] Loaded demo data:', window.SIFT_GRAPH.case_id);
+  window.dispatchEvent(new Event('sift-data-ready'));
+})();
